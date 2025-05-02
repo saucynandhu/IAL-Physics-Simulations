@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projectile Motion Simulator</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Projectile Motion Simulator</h1>
+        
+        <div class="theory-section">
+            <h2>Projectile Motion Theory</h2>
+            
+            <div class="theory-card">
+                <h3>Basic Principles</h3>
+                <div class="theory-content">
+                    <p>Projectile motion is the motion of an object thrown or projected into the air, subject to only the acceleration of gravity. The path that the object follows is called its trajectory.</p>
+                    
+                    <div class="equation">y = y₀ + v₀t + ½gt²</div>
+                    <p>Where:</p>
+                    <ul>
+                        <li>y is the vertical position (in meters)</li>
+                        <li>y₀ is the initial height (in meters)</li>
+                        <li>v₀ is the initial velocity (in m/s)</li>
+                        <li>g is acceleration due to gravity (-9.81 m/s²)</li>
+                        <li>t is time (in seconds)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>Key Equations</h3>
+                <div class="theory-content">
+                    <ul>
+                        <li><strong>Horizontal Motion:</strong> x = x₀ + v₀ₓt
+                            <ul>
+                                <li>Constant velocity (no acceleration)</li>
+                                <li>v₀ₓ = v₀cos(θ)</li>
+                            </ul>
+                        </li>
+                        <li><strong>Vertical Motion:</strong> y = y₀ + v₀ᵧt + ½gt²
+                            <ul>
+                                <li>Accelerated motion due to gravity</li>
+                                <li>v₀ᵧ = v₀sin(θ)</li>
+                            </ul>
+                        </li>
+                        <li><strong>Time of Flight:</strong> t = 2v₀sin(θ)/g
+                            <ul>
+                                <li>Time until projectile returns to initial height</li>
+                                <li>Only valid when y = y₀</li>
+                            </ul>
+                        </li>
+                        <li><strong>Maximum Height:</strong> h = v₀²sin²(θ)/2g
+                            <ul>
+                                <li>Highest point in the trajectory</li>
+                                <li>Occurs when vertical velocity is zero</li>
+                            </ul>
+                        </li>
+                        <li><strong>Range:</strong> R = v₀²sin(2θ)/g
+                            <ul>
+                                <li>Horizontal distance traveled</li>
+                                <li>Maximum when θ = 45°</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>Important Concepts</h3>
+                <div class="theory-content">
+                    <ul>
+                        <li><strong>Independence of Motion:</strong>
+                            <ul>
+                                <li>Horizontal and vertical motions are independent</li>
+                                <li>Horizontal velocity remains constant</li>
+                                <li>Vertical velocity changes due to gravity</li>
+                            </ul>
+                        </li>
+                        <li><strong>Parabolic Path:</strong>
+                            <ul>
+                                <li>Trajectory forms a parabola</li>
+                                <li>Symmetrical about the peak</li>
+                                <li>Time up equals time down</li>
+                            </ul>
+                        </li>
+                        <li><strong>Optimal Angle:</strong>
+                            <ul>
+                                <li>45° gives maximum range</li>
+                                <li>Complementary angles give same range</li>
+                                <li>90° gives maximum height</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>Real-World Applications</h3>
+                <div class="theory-content">
+                    <ul>
+                        <li>Sports (basketball, football, golf)</li>
+                        <li>Artillery and ballistics</li>
+                        <li>Water fountains and sprinklers</li>
+                        <li>Fireworks displays</li>
+                        <li>Spacecraft trajectories</li>
+                        <li>Water slides and amusement park rides</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="simulation-container">
+            <div class="visualization">
+                <canvas id="projectile-canvas"></canvas>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label for="initial-velocity">Initial Velocity (m/s):</label>
+                    <input type="range" id="initial-velocity" min="1" max="50" value="20" step="0.1">
+                    <span id="velocity-value">20.0 m/s</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="angle">Launch Angle (degrees):</label>
+                    <input type="range" id="angle" min="0" max="90" value="45" step="0.1">
+                    <span id="angle-value">45.0°</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="height">Initial Height (m):</label>
+                    <input type="range" id="height" min="0" max="20" value="0" step="0.1">
+                    <span id="height-value">0.0 m</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="gravity">Gravity (m/s²):</label>
+                    <input type="range" id="gravity" min="1" max="20" value="9.8" step="0.1">
+                    <span id="gravity-value">9.8 m/s²</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="bounciness">Bounciness (0-1):</label>
+                    <input type="range" id="bounciness" min="0" max="1" value="0.7" step="0.1">
+                    <span id="bounciness-value">0.7</span>
+                </div>
+                
+                <button id="start">Start</button>
+                <button id="reset">Reset</button>
+            </div>
+        </div>
+        
+        <div class="data-display">
+            <div class="data-group">
+                <h3>Motion Data</h3>
+                <p>Time: <span id="time">0.00</span> s</p>
+                <p>Range: <span id="range">0.00</span> m</p>
+                <p>Maximum Height: <span id="max-height">0.00</span> m</p>
+            </div>
+            
+            <div class="data-group">
+                <h3>Velocity</h3>
+                <p>Horizontal: <span id="horizontal-velocity">0.00</span> m/s</p>
+                <p>Vertical: <span id="vertical-velocity">0.00</span> m/s</p>
+                <p>Total: <span id="total-velocity">0.00</span> m/s</span></p>
+            </div>
+            
+            <div class="data-group">
+                <h3>Position</h3>
+                <p>X: <span id="x-position">0.00</span> m</p>
+                <p>Y: <span id="y-position">0.00</span> m</p>
+                <p>Distance: <span id="distance">0.00</span> m</p>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html> 

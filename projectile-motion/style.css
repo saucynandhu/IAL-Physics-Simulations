@@ -1,0 +1,302 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    color: #333;
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: clamp(10px, 3vw, 20px);
+    width: 100%;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2c3e50;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+/* Theory Section Styles */
+.theory-section {
+    margin-bottom: 30px;
+    background: white;
+    padding: clamp(15px, 3vw, 25px);
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.theory-section h2 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
+}
+
+.theory-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: clamp(15px, 3vw, 25px);
+    margin-bottom: 20px;
+    border-left: 4px solid #3498db;
+}
+
+.theory-card:last-child {
+    margin-bottom: 0;
+}
+
+.theory-card h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+}
+
+.theory-content {
+    color: #34495e;
+    line-height: 1.6;
+    font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+.theory-content p {
+    margin-bottom: 15px;
+}
+
+.theory-content ul {
+    list-style-type: none;
+    padding-left: 20px;
+    margin-bottom: 15px;
+}
+
+.theory-content ul li {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 8px;
+}
+
+.theory-content ul li:before {
+    content: "•";
+    color: #3498db;
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+}
+
+.equation {
+    background: #fff;
+    padding: clamp(10px, 2vw, 15px);
+    border-radius: 5px;
+    margin: 15px 0;
+    text-align: center;
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    font-family: 'KaTeX_Math', serif;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+}
+
+/* Simulation Container Styles */
+.simulation-container {
+    display: flex;
+    gap: clamp(10px, 2vw, 20px);
+    margin-bottom: 30px;
+    background: white;
+    padding: clamp(15px, 3vw, 25px);
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    flex-wrap: wrap;
+}
+
+.visualization {
+    flex: 2;
+    min-width: 300px;
+    min-height: clamp(300px, 50vh, 500px);
+    background: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.controls {
+    flex: 1;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+label {
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+input[type="range"] {
+    width: 100%;
+    height: 8px;
+    background: #ddd;
+    border-radius: 4px;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: clamp(14px, 2vw, 16px);
+    height: clamp(14px, 2vw, 16px);
+    background: #3498db;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+button {
+    padding: clamp(8px, 2vw, 12px) clamp(15px, 3vw, 25px);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+#start {
+    background-color: #2ecc71;
+    color: white;
+}
+
+#start:hover {
+    background-color: #27ae60;
+}
+
+#reset {
+    background-color: #e74c3c;
+    color: white;
+}
+
+#reset:hover {
+    background-color: #c0392b;
+}
+
+/* Graphs Container Styles */
+.graphs-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: clamp(10px, 2vw, 20px);
+    margin-bottom: 30px;
+}
+
+.graph {
+    background: white;
+    padding: clamp(15px, 3vw, 25px);
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.graph h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: clamp(1rem, 2.2vw, 1.2rem);
+}
+
+/* Data Display Styles */
+.data-display {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: clamp(10px, 2vw, 20px);
+    background: white;
+    padding: clamp(15px, 3vw, 25px);
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.data-group {
+    padding: clamp(10px, 2vw, 15px);
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+.data-group h3 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: clamp(1rem, 2.2vw, 1.1rem);
+}
+
+.data-group p {
+    margin: 5px 0;
+    font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+    color: #666;
+}
+
+span {
+    font-weight: bold;
+    color: #3498db;
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .simulation-container {
+        flex-direction: column;
+    }
+    
+    .visualization, .controls {
+        flex: none;
+        width: 100%;
+    }
+    
+    .graphs-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .data-display {
+        grid-template-columns: 1fr;
+    }
+    
+    .theory-card {
+        padding: 15px;
+    }
+    
+    .equation {
+        font-size: 1em;
+        padding: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .theory-card, .visualization, .controls, .data-group {
+        padding: 15px;
+    }
+    
+    .equation {
+        font-size: 0.9rem;
+    }
+    
+    button {
+        padding: 10px 15px;
+    }
+} 
