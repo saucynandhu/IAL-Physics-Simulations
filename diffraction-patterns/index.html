@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Diffraction Patterns Simulation</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>2D Diffraction Patterns Simulation</h1>
+
+        <!-- Theory Section -->
+        <section class="theory-section">
+            <h2>Theory of Diffraction</h2>
+            <div class="theory-card">
+                <h3>What is Diffraction?</h3>
+                <div class="theory-content">
+                    <p>Diffraction is the bending of waves around obstacles or through openings. In light waves, this phenomenon creates characteristic patterns that depend on the wavelength of light and the size/shape of the aperture.</p>
+                </div>
+            </div>
+            <div class="theory-card">
+                <h3>Single Slit Diffraction</h3>
+                <div class="theory-content">
+                    <p>When light passes through a single slit, it creates a pattern of bright and dark fringes. The central maximum is the brightest, with decreasing intensity in the side fringes.</p>
+                    <div class="equation">
+                        d sin(θ) = mλ
+                    </div>
+                    <p>Where:</p>
+                    <ul>
+                        <li>d is the slit width</li>
+                        <li>θ is the angle of diffraction</li>
+                        <li>m is the order of the fringe</li>
+                        <li>λ is the wavelength of light</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="theory-card">
+                <h3>Double Slit Interference</h3>
+                <div class="theory-content">
+                    <p>When light passes through two closely spaced slits, it creates an interference pattern. The bright fringes occur where the waves from both slits are in phase.</p>
+                    <div class="equation">
+                        d sin(θ) = mλ
+                    </div>
+                    <p>Where:</p>
+                    <ul>
+                        <li>d is the distance between slits</li>
+                        <li>θ is the angle of diffraction</li>
+                        <li>m is the order of the fringe</li>
+                        <li>λ is the wavelength of light</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Simulation Container -->
+        <div class="simulation-container">
+            <div class="visualization">
+                <canvas id="diffraction-canvas"></canvas>
+            </div>
+            <div class="controls">
+                <div class="control-group">
+                    <label for="pattern-type">Pattern Type:</label>
+                    <select id="pattern-type">
+                        <option value="single-slit">Single Slit</option>
+                        <option value="double-slit">Double Slit</option>
+                        <option value="circular">Circular Aperture</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="wavelength">Wavelength (nm):</label>
+                    <input type="range" id="wavelength" min="380" max="750" value="550" step="1">
+                    <span id="wavelength-value">550 nm</span>
+                </div>
+                <div class="control-group">
+                    <label for="slit-width">Slit Width (μm):</label>
+                    <input type="range" id="slit-width" min="1" max="100" value="20" step="1">
+                    <span id="slit-width-value">20 μm</span>
+                </div>
+                <div class="control-group">
+                    <label for="slit-separation">Slit Separation (μm):</label>
+                    <input type="range" id="slit-separation" min="10" max="200" value="50" step="1">
+                    <span id="slit-separation-value">50 μm</span>
+                </div>
+                <div class="control-group">
+                    <label for="screen-distance">Screen Distance (m):</label>
+                    <input type="range" id="screen-distance" min="0.1" max="2" value="1" step="0.1">
+                    <span id="screen-distance-value">1 m</span>
+                </div>
+                <button id="start">Start Simulation</button>
+                <button id="reset">Reset</button>
+            </div>
+        </div>
+
+        <!-- Data Display -->
+        <div class="data-display">
+            <div class="data-group">
+                <h3>Pattern Parameters</h3>
+                <p>Wavelength: <span id="wavelength-display">550 nm</span></p>
+                <p>Slit Width: <span id="slit-width-display">20 μm</span></p>
+                <p>Slit Separation: <span id="slit-separation-display">50 μm</span></p>
+                <p>Screen Distance: <span id="screen-distance-display">1 m</span></p>
+            </div>
+            <div class="data-group">
+                <h3>Pattern Characteristics</h3>
+                <p>Central Maximum Width: <span id="central-width">0.0 mm</span></p>
+                <p>First Minimum Position: <span id="first-minimum">0.0 mm</span></p>
+                <p>Fringe Spacing: <span id="fringe-spacing">0.0 mm</span></p>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html> 
