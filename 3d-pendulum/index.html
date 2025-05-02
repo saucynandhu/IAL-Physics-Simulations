@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Pendulum Simulator</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>3D Pendulum Simulator</h1>
+        
+        <div class="theory-section">
+            <h2>3D Pendulum Theory</h2>
+            
+            <div class="theory-card">
+                <h3>Basic Principles</h3>
+                <div class="theory-content">
+                    <p>A 3D pendulum is a physical system consisting of a mass suspended from a fixed point that can move in three-dimensional space. Unlike a simple pendulum, it can swing in any direction, creating complex motion patterns.</p>
+                    
+                    <div class="equation">T = 2π√(L/g)</div>
+                    <p>Where:</p>
+                    <ul>
+                        <li>T is the period of oscillation (in seconds)</li>
+                        <li>L is the length of the pendulum (in meters)</li>
+                        <li>g is acceleration due to gravity (9.81 m/s²)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>Key Concepts</h3>
+                <div class="theory-content">
+                    <ul>
+                        <li><strong>Motion in 3D Space:</strong>
+                            <ul>
+                                <li>Combination of two perpendicular oscillations</li>
+                                <li>Can form Lissajous figures</li>
+                                <li>Complex path depending on initial conditions</li>
+                            </ul>
+                        </li>
+                        <li><strong>Energy Conservation:</strong>
+                            <ul>
+                                <li>Constant total energy (kinetic + potential)</li>
+                                <li>Energy transfers between forms</li>
+                                <li>Gradual energy loss due to damping</li>
+                            </ul>
+                        </li>
+                        <li><strong>Phase Space:</strong>
+                            <ul>
+                                <li>Position and momentum in 3D</li>
+                                <li>Chaotic behavior possible</li>
+                                <li>Stable and unstable regions</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>Physics of 3D Motion</h3>
+                <div class="theory-content">
+                    <ul>
+                        <li><strong>Equations of Motion:</strong>
+                            <ul>
+                                <li>θ'' = -(g/L)sin(θ) for each plane</li>
+                                <li>Non-linear differential equations</li>
+                                <li>Small angle approximation: θ'' = -(g/L)θ</li>
+                            </ul>
+                        </li>
+                        <li><strong>Motion Types:</strong>
+                            <ul>
+                                <li>Regular periodic motion</li>
+                                <li>Quasi-periodic motion</li>
+                                <li>Chaotic motion</li>
+                            </ul>
+                        </li>
+                        <li><strong>Damping Effects:</strong>
+                            <ul>
+                                <li>Air resistance</li>
+                                <li>Friction at pivot</li>
+                                <li>Energy dissipation</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>Real-World Applications</h3>
+                <div class="theory-content">
+                    <ul>
+                        <li>Seismometers and earthquake detection</li>
+                        <li>Foucault's pendulum demonstration</li>
+                        <li>Gyroscopes and navigation systems</li>
+                        <li>Energy harvesting devices</li>
+                        <li>Architectural design and stability</li>
+                        <li>Sports equipment dynamics</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="simulation-container">
+            <div class="visualization">
+                <canvas id="pendulum-canvas"></canvas>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label for="pendulum-length">Pendulum Length (m):</label>
+                    <input type="range" id="pendulum-length" min="0.5" max="3" value="1" step="0.1">
+                    <span id="length-value">1 m</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="initial-angle-x">Initial Angle X (degrees):</label>
+                    <input type="range" id="initial-angle-x" min="-45" max="45" value="30" step="1">
+                    <span id="angle-x-value">30°</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="initial-angle-y">Initial Angle Y (degrees):</label>
+                    <input type="range" id="initial-angle-y" min="-45" max="45" value="0" step="1">
+                    <span id="angle-y-value">0°</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="mass">Mass (kg):</label>
+                    <input type="range" id="mass" min="0.1" max="2" value="1" step="0.1">
+                    <span id="mass-value">1 kg</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="damping">Damping Factor:</label>
+                    <input type="range" id="damping" min="0" max="0.1" value="0.01" step="0.001">
+                    <span id="damping-value">0.01</span>
+                </div>
+                
+                <button id="start">Start</button>
+                <button id="reset">Reset</button>
+            </div>
+        </div>
+        
+        <div class="graphs-container">
+            <div class="graph">
+                <h3>Position Over Time</h3>
+                <canvas id="position-graph"></canvas>
+            </div>
+            <div class="graph">
+                <h3>Energy Over Time</h3>
+                <canvas id="energy-graph"></canvas>
+            </div>
+        </div>
+        
+        <div class="data-display">
+            <div class="data-group">
+                <h3>Motion Data</h3>
+                <p>Time: <span id="time">0.00</span> s</p>
+            </div>
+            
+            <div class="data-group">
+                <h3>Position</h3>
+                <p>X: <span id="x-position">0.00</span> m</p>
+                <p>Y: <span id="y-position">0.00</span> m</p>
+                <p>Z: <span id="z-position">0.00</span> m</p>
+            </div>
+            
+            <div class="data-group">
+                <h3>Energy</h3>
+                <p>Kinetic: <span id="kinetic-energy">0.00</span> J</p>
+                <p>Potential: <span id="potential-energy">0.00</span> J</p>
+                <p>Total: <span id="total-energy">0.00</span> J</p>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html> 
