@@ -36,16 +36,6 @@ A collection of interactive physics simulations built using HTML, CSS, and JavaS
 
 ## 🚀 Getting Started
 
-1. Clone this repository:
-   
-   git clone https://github.com/your-username/your-repo-name.git
-
-2. Open `index.html` in your browser to access the main dashboard or simulation hub.
-
-3. Explore each simulation by navigating into its folder and opening the respective HTML file
-
-### OR YOU CAN VIEW THE HOSTED VERSION:
-
 **[IAL PHYSICS LAB](https://saucynandhu.github.io/IAL-Physics-Simulations/)**
 
 ---
