@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stokes Law Simulator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Stokes Law Simulator</h1>
+        
+        <div class="theory-section">
+            <h2>Stokes Law Theory</h2>
+            
+            <div class="theory-card">
+                <h3>Basic Principles</h3>
+                <div class="theory-content">
+                    <p>Stokes Law describes the force of viscosity on a sphere moving through a fluid. The drag force is given by:</p>
+                    
+                    <div class="equation">F = 6πηrv</div>
+                    <p>Where:</p>
+                    <ul>
+                        <li>F is the drag force (in Newtons)</li>
+                        <li>η (eta) is the dynamic viscosity (in Pa·s)</li>
+                        <li>r is the radius of the sphere (in meters)</li>
+                        <li>v is the velocity of the sphere (in m/s)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>Terminal Velocity</h3>
+                <div class="theory-content">
+                    <p>When a sphere falls through a fluid, it reaches terminal velocity when the drag force equals the gravitational force:</p>
+                    
+                    <div class="equation">v_t = (2r²g(ρ_s - ρ_f))/(9η)</div>
+                    <p>Where:</p>
+                    <ul>
+                        <li>v_t is the terminal velocity</li>
+                        <li>ρ_s is the density of the sphere</li>
+                        <li>ρ_f is the density of the fluid</li>
+                        <li>g is acceleration due to gravity (9.81 m/s²)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>Important Concepts</h3>
+                <div class="theory-content">
+                    <ul>
+                        <li><strong>Viscosity:</strong>
+                            <ul>
+                                <li>Measure of fluid's resistance to flow</li>
+                                <li>Higher viscosity = more resistance</li>
+                                <li>Units: Pascal-seconds (Pa·s)</li>
+                            </ul>
+                        </li>
+                        <li><strong>Terminal Velocity:</strong>
+                            <ul>
+                                <li>Constant velocity reached when forces balance</li>
+                                <li>Depends on sphere size and fluid properties</li>
+                                <li>Larger spheres fall faster</li>
+                            </ul>
+                        </li>
+                        <li><strong>Applications:</strong>
+                            <ul>
+                                <li>Sedimentation analysis</li>
+                                <li>Viscosity measurement</li>
+                                <li>Particle size determination</li>
+                                <li>Industrial processes</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="simulation-container">
+            <div class="visualization">
+                <canvas id="stokes-canvas"></canvas>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label for="sphere-radius">Sphere Radius (mm):</label>
+                    <input type="range" id="sphere-radius" min="1" max="20" value="5" step="0.1">
+                    <span id="radius-value">5.0 mm</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="viscosity">Fluid Viscosity (Pa·s):</label>
+                    <input type="range" id="viscosity" min="0.1" max="10" value="1" step="0.1">
+                    <span id="viscosity-value">1.0 Pa·s</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="fluid-density">Fluid Density (kg/m³):</label>
+                    <input type="range" id="fluid-density" min="800" max="2000" value="1000" step="10">
+                    <span id="fluid-density-value">1000 kg/m³</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="sphere-density">Sphere Density (kg/m³):</label>
+                    <input type="range" id="sphere-density" min="2000" max="8000" value="7800" step="100">
+                    <span id="sphere-density-value">7800 kg/m³</span>
+                </div>
+                
+                <button id="start">Start</button>
+                <button id="reset">Reset</button>
+            </div>
+        </div>
+        
+        <div class="data-display">
+            <div class="data-group">
+                <h3>Motion Data</h3>
+                <p>Time: <span id="time">0.0</span> s</p>
+                <p>Position: <span id="position">0.0</span> m</p>
+                <p>Velocity: <span id="velocity">0.0</span> m/s</p>
+            </div>
+            
+            <div class="data-group">
+                <h3>Forces</h3>
+                <p>Gravity: <span id="gravity-force">0.0</span> N</p>
+                <p>Buoyancy: <span id="buoyancy-force">0.0</span> N</p>
+                <p>Drag: <span id="drag-force">0.0</span> N</p>
+            </div>
+            
+            <div class="data-group">
+                <h3>Calculated Values</h3>
+                <p>Terminal Velocity: <span id="terminal-velocity">0.0</span> m/s</p>
+                <p>Reynolds Number: <span id="reynolds-number">0.0</span></p>
+                <p>Drag Coefficient: <span id="drag-coefficient">0.0</span></p>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html> 
