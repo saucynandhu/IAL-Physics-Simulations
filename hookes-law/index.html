@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hooke's Law Simulator</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Hooke's Law Simulator</h1>
+        
+        <div class="theory-section">
+            <h2>Hooke's Law Theory</h2>
+            
+            <div class="theory-card">
+                <h3>Basic Principle</h3>
+                <div class="theory-content">
+                    <p>Hooke's Law describes the relationship between the force applied to a spring and its extension:</p>
+                    <div class="equation">F = -kx</div>
+                    <p>Where:</p>
+                    <ul>
+                        <li>F is the force applied (in Newtons, N)</li>
+                        <li>k is the spring constant (in N/m)</li>
+                        <li>x is the extension from equilibrium (in meters, m)</li>
+                        <li>The negative sign indicates the force is restorative</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>Key Concepts</h3>
+                <div class="theory-content">
+                    <ul>
+                        <li><strong>Elastic Limit:</strong> The maximum extension before permanent deformation occurs</li>
+                        <li><strong>Spring Constant (k):</strong> 
+                            <ul>
+                                <li>Measures the stiffness of the spring</li>
+                                <li>Higher k = stiffer spring</li>
+                                <li>Lower k = more flexible spring</li>
+                            </ul>
+                        </li>
+                        <li><strong>Simple Harmonic Motion:</strong> The oscillatory motion of a spring-mass system</li>
+                        <li><strong>Period of Oscillation:</strong> T = 2π√(m/k)
+                            <ul>
+                                <li>m is the mass (in kg)</li>
+                                <li>k is the spring constant (in N/m)</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>Energy in Spring Systems</h3>
+                <div class="theory-content">
+                    <p>Spring systems involve two types of energy:</p>
+                    <ul>
+                        <li><strong>Potential Energy:</strong> PE = ½kx²
+                            <ul>
+                                <li>Stored in the spring when stretched or compressed</li>
+                                <li>Maximum at maximum extension</li>
+                                <li>Zero at equilibrium position</li>
+                            </ul>
+                        </li>
+                        <li><strong>Kinetic Energy:</strong> KE = ½mv²
+                            <ul>
+                                <li>Energy of motion</li>
+                                <li>Maximum at equilibrium position</li>
+                                <li>Zero at maximum extension</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <p>The total energy (PE + KE) remains constant in an ideal system (no damping).</p>
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>Real-World Applications</h3>
+                <div class="theory-content">
+                    <ul>
+                        <li>Car suspension systems</li>
+                        <li>Mechanical watches</li>
+                        <li>Shock absorbers</li>
+                        <li>Musical instruments (piano strings)</li>
+                        <li>Exercise equipment</li>
+                        <li>Industrial machinery</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="simulation-container">
+            <div class="visualization">
+                <canvas id="spring-canvas"></canvas>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label for="mass">Mass (kg):</label>
+                    <input type="range" id="mass" min="0.1" max="5" value="1" step="0.1">
+                    <span id="mass-value">1.0 kg</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="spring-constant">Spring Constant (N/m):</label>
+                    <input type="range" id="spring-constant" min="10" max="500" value="100">
+                    <span id="spring-constant-value">100 N/m</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="damping">Damping Coefficient:</label>
+                    <input type="range" id="damping" min="0" max="10" value="1" step="0.1">
+                    <span id="damping-value">1.0</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="gravity">Gravity (m/s²):</label>
+                    <input type="range" id="gravity" min="1" max="20" value="9.81">
+                    <span id="gravity-value">9.81 m/s²</span>
+                </div>
+                
+                <button id="start">Start</button>
+                <button id="reset">Reset</button>
+            </div>
+        </div>
+        
+        <div class="graphs-container">
+            <div class="graph">
+                <h3>Force vs Extension</h3>
+                <canvas id="force-extension-graph"></canvas>
+            </div>
+            <div class="graph">
+                <h3>Energy vs Time</h3>
+                <canvas id="energy-graph"></canvas>
+            </div>
+        </div>
+        
+        <div class="data-display">
+            <div class="data-group">
+                <h3>Spring Properties</h3>
+                <p>Extension: <span id="extension">0.00</span> m</p>
+                <p>Force: <span id="force">0.00</span> N</p>
+                <p>Period: <span id="period">0.00</span> s</p>
+            </div>
+            
+            <div class="data-group">
+                <h3>Energy</h3>
+                <p>Kinetic Energy: <span id="kinetic-energy">0.00</span> J</p>
+                <p>Potential Energy: <span id="potential-energy">0.00</span> J</p>
+                <p>Total Energy: <span id="total-energy">0.00</span> J</p>
+            </div>
+            
+            <div class="data-group">
+                <h3>Motion</h3>
+                <p>Velocity: <span id="velocity">0.00</span> m/s</p>
+                <p>Acceleration: <span id="acceleration">0.00</span> m/s²</p>
+                <p>Time: <span id="time">0.00</span> s</p>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html> 
