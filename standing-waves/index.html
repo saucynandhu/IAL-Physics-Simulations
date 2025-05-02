@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Standing Wave Simulator</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Standing Wave Simulator</h1>
+        
+        <div class="theory-section">
+            <h2>Standing Wave Theory</h2>
+            
+            <div class="theory-card">
+                <h3>Basic Principles</h3>
+                <div class="theory-content">
+                    <p>A standing wave is a wave that remains in a constant position. It occurs when two waves of the same frequency and amplitude travel in opposite directions and interfere with each other.</p>
+                    
+                    <div class="equation" id="wave-equation"></div>
+                    <p>Where:</p>
+                    <ul>
+                        <li>f is the frequency (Hz)</li>
+                        <li>n is the harmonic number</li>
+                        <li>L is the length of the string (m)</li>
+                        <li>T is the tension in the string (N)</li>
+                        <li>μ is the mass per unit length (kg/m)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>Key Concepts</h3>
+                <div class="theory-content">
+                    <ul>
+                        <li><strong>Nodes and Antinodes:</strong>
+                            <ul>
+                                <li>Nodes: Points of zero displacement</li>
+                                <li>Antinodes: Points of maximum displacement</li>
+                                <li>Number of nodes = n + 1</li>
+                                <li>Number of antinodes = n</li>
+                            </ul>
+                        </li>
+                        <li><strong>Harmonics:</strong>
+                            <ul>
+                                <li>Fundamental frequency (n=1)</li>
+                                <li>Second harmonic (n=2)</li>
+                                <li>Third harmonic (n=3)</li>
+                                <li>And so on...</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="simulation-container">
+            <div class="visualization">
+                <canvas id="wave-canvas"></canvas>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label for="string-length">String Length (m):</label>
+                    <input type="range" id="string-length" min="0.5" max="2" value="1" step="0.1">
+                    <span id="length-value">1 m</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="tension">Tension (N):</label>
+                    <input type="range" id="tension" min="1" max="100" value="50" step="1">
+                    <span id="tension-value">50 N</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="mass-per-length">Mass per Unit Length (kg/m):</label>
+                    <input type="range" id="mass-per-length" min="0.001" max="0.1" value="0.01" step="0.001">
+                    <span id="mass-value">0.01 kg/m</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="harmonic">Harmonic Number:</label>
+                    <input type="range" id="harmonic" min="1" max="5" value="1" step="1">
+                    <span id="harmonic-value">1</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="amplitude">Amplitude (m):</label>
+                    <input type="range" id="amplitude" min="0.01" max="0.2" value="0.1" step="0.01">
+                    <span id="amplitude-value">0.1 m</span>
+                </div>
+                
+                <button id="start">Start</button>
+                <button id="reset">Reset</button>
+            </div>
+        </div>
+        
+        <div class="data-display">
+            <div class="data-group">
+                <h3>Wave Properties</h3>
+                <p>Frequency: <span id="frequency">0.00</span> Hz</p>
+                <p>Wavelength: <span id="wavelength">0.00</span> m</p>
+                <p>Wave Speed: <span id="wave-speed">0.00</span> m/s</p>
+            </div>
+            
+            <div class="data-group">
+                <h3>Points of Interest</h3>
+                <p>Number of Nodes: <span id="node-count">0</span></p>
+                <p>Number of Antinodes: <span id="antinode-count">0</span></p>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const equation = katex.renderToString('f = \\frac{n}{2L}\\sqrt{\\frac{T}{\\mu}}', {
+                displayMode: true,
+                throwOnError: false
+            });
+            document.getElementById('wave-equation').innerHTML = equation;
+        });
+    </script>
+</body>
+</html> 
