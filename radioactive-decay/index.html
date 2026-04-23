@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radioactive Decay Simulator</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Radioactive Decay Simulator</h1>
+        
+        <div class="theory-section">
+            <h2>Radioactive Decay Theory</h2>
+            <p>Radioactive decay is a random process at the level of single atoms, but predictable statistically for large samples. The probability of decay per unit time is constant for a given isotope.</p>
+            
+            <div class="equation">N = N₀e^(-λt)</div>
+            <p>Number of undecayed nuclei at time t, where N₀ is initial number and λ is decay constant.</p>
+            
+            <div class="equation">A = λN = A₀e^(-λt)</div>
+            <p>Activity (decay rate) at time t, where A₀ is initial activity.</p>
+            
+            <div class="equation">t½ = ln(2)/λ</div>
+            <p>Half-life - time for half the nuclei to decay.</p>
+            
+            <div class="equation">λ = ln(2)/t½</div>
+            <p>Decay constant in terms of half-life.</p>
+        </div>
+        
+        <div class="simulation-container">
+            <div class="decay-container">
+                <h3>Decay Visualization</h3>
+                <canvas id="decayCanvas"></canvas>
+                <div style="text-align: center; margin-top: 15px; color: #34495e;">
+                    <div>Active Nuclei: <span id="activeNuclei" style="font-weight: bold; color: #2c3e50;">0</span></div>
+                    <div>Decayed Nuclei: <span id="decayedNuclei" style="font-weight: bold; color: #e74c3c;">0</span></div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <h3>Decay Controls</h3>
+                
+                <div class="isotope-selector">
+                    <div class="isotope-option" data-isotope="carbon-14">
+                        <div class="isotope-name">Carbon-14</div>
+                        <div class="isotope-half-life">t½ = 5,730 years</div>
+                    </div>
+                    <div class="isotope-option" data-isotope="radium-226">
+                        <div class="isotope-name">Radium-226</div>
+                        <div class="isotope-half-life">t½ = 1,600 years</div>
+                    </div>
+                    <div class="isotope-option" data-isotope="uranium-238">
+                        <div class="isotope-name">Uranium-238</div>
+                        <div class="isotope-half-life">t½ = 4.5 billion years</div>
+                    </div>
+                    <div class="isotope-option" data-isotope="radon-222">
+                        <div class="isotope-name">Radon-222</div>
+                        <div class="isotope-half-life">t½ = 3.8 days</div>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="numNuclei">Number of Nuclei:</label>
+                    <input type="range" id="numNuclei" min="50" max="500" step="10" value="200">
+                    <div class="value" id="numNucleiValue">200</div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="timeScale">Time Scale:</label>
+                    <select id="timeScale">
+                        <option value="realtime">Real Time</option>
+                        <option value="fast">Fast (10×)</option>
+                        <option value="veryfast">Very Fast (100×)</option>
+                        <option value="instant">Instant (1000×)</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="halfLife">Half-Life (seconds):</label>
+                    <input type="range" id="halfLife" min="1" max="60" step="1" value="10">
+                    <div class="value" id="halfLifeValue">10 s</div>
+                </div>
+                
+                <div class="control-group">
+                    <button id="startDecay">Start Decay</button>
+                    <button id="pauseDecay">Pause</button>
+                    <button id="resetDecay">Reset</button>
+                </div>
+                
+                <div class="status-display">
+                    <h4>Decay Statistics</h4>
+                    <div class="status-item">
+                        <span>Time Elapsed:</span>
+                        <span id="timeElapsed">0.0 s</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Half-Lives Passed:</span>
+                        <span id="halfLivesPassed">0.00</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Current Activity:</span>
+                        <span id="currentActivity">0.00 Bq</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Initial Activity:</span>
+                        <span id="initialActivity">0.00 Bq</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Decay Constant:</span>
+                        <span id="decayConstant">0.00 s⁻¹</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Theoretical N:</span>
+                        <span id="theoreticalN">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="graphs-container">
+            <div class="graph-box">
+                <h3>N vs Time</h3>
+                <canvas id="nVsTimeGraph"></canvas>
+            </div>
+            <div class="graph-box">
+                <h3>Activity vs Time</h3>
+                <canvas id="activityVsTimeGraph"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('decayCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Isotope data
+        const isotopes = {
+            'carbon-14': { halfLife: 5730, unit: 'years', color: '#3498db' },
+            'radium-226': { halfLife: 1600, unit: 'years', color: '#e74c3c' },
+            'uranium-238': { halfLife: 4.5e9, unit: 'years', color: '#f39c12' },
+            'radon-222': { halfLife: 3.8, unit: 'days', color: '#9b59b6' }
+        };
+        
+        // Simulation variables
+        let selectedIsotope = 'carbon-14';
+        let numNuclei = 200;
+        let halfLife = 10;
+        let timeScale = 'realtime';
+        let isDecaying = false;
+        let isPaused = false;
+        let time = 0;
+        let animationId;
+        
+        // Nuclei array
+        let nuclei = [];
+        
+        // Graph data
+        let timeData = [];
+        let actualNData = [];
+        let theoreticalNData = [];
+        let activityData = [];
+        
+        // Graph setup
+        const nVsTimeGraph = new Chart(document.getElementById('nVsTimeGraph'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Actual N',
+                    data: [],
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.4,
+                    pointRadius: 2,
+                    pointHoverRadius: 4
+                }, {
+                    label: 'Theoretical N',
+                    data: [],
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    borderDash: [5, 5],
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 0
+                },
+                scales: {
+                    x: {
+                        type: 'linear',
+                        min: 0,
+                        max: 60,
+                        title: {
+                            display: true,
+                            text: 'Time (s)',
+                            color: '#2c3e50',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: { 
+                            color: '#2c3e50',
+                            stepSize: 10
+                        },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    },
+                    y: {
+                        type: 'linear',
+                        min: 0,
+                        max: 250,
+                        title: {
+                            display: true,
+                            text: 'Number of Nuclei',
+                            color: '#2c3e50',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: { 
+                            color: '#2c3e50',
+                            stepSize: 50
+                        },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#2c3e50' }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            }
+        });
+        
+        const activityVsTimeGraph = new Chart(document.getElementById('activityVsTimeGraph'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Activity (Bq)',
+                    data: [],
+                    borderColor: '#2ecc71',
+                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                    tension: 0.4,
+                    pointRadius: 2,
+                    pointHoverRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 0
+                },
+                scales: {
+                    x: {
+                        type: 'linear',
+                        min: 0,
+                        max: 60,
+                        title: {
+                            display: true,
+                            text: 'Time (s)',
+                            color: '#2c3e50',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: { 
+                            color: '#2c3e50',
+                            stepSize: 10
+                        },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    },
+                    y: {
+                        type: 'linear',
+                        min: 0,
+                        max: 25,
+                        title: {
+                            display: true,
+                            text: 'Activity (Bq)',
+                            color: '#2c3e50',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: { 
+                            color: '#2c3e50',
+                            stepSize: 5
+                        },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#2c3e50' }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            }
+        });
+        
+        // Control event listeners
+        document.querySelectorAll('.isotope-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.isotope-option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                selectedIsotope = option.dataset.isotope;
+                updateIsotopeInfo();
+            });
+        });
+        
+        document.getElementById('numNuclei').addEventListener('input', (e) => {
+            numNuclei = parseInt(e.target.value);
+            document.getElementById('numNucleiValue').textContent = numNuclei;
+            resetSimulation();
+        });
+        
+        document.getElementById('timeScale').addEventListener('change', (e) => {
+            timeScale = e.target.value;
+        });
+        
+        document.getElementById('halfLife').addEventListener('input', (e) => {
+            halfLife = parseFloat(e.target.value);
+            document.getElementById('halfLifeValue').textContent = halfLife + ' s';
+            updateCalculations();
+        });
+        
+        document.getElementById('startDecay').addEventListener('click', () => {
+            if (!isDecaying) {
+                startDecay();
+            }
+        });
+        
+        document.getElementById('pauseDecay').addEventListener('click', () => {
+            isPaused = !isPaused;
+            document.getElementById('pauseDecay').textContent = isPaused ? 'Resume' : 'Pause';
+            document.getElementById('pauseDecay').classList.toggle('active', isPaused);
+        });
+        
+        document.getElementById('resetDecay').addEventListener('click', () => {
+            resetSimulation();
+        });
+        
+        // Nucleus class
+        class Nucleus {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.active = true;
+                this.decayTime = this.calculateDecayTime();
+            }
+            
+            calculateDecayTime() {
+                const decayConstant = Math.log(2) / halfLife;
+                const random = Math.random();
+                return -Math.log(1 - random) / decayConstant;
+            }
+            
+            update(elapsedTime) {
+                if (this.active && elapsedTime >= this.decayTime) {
+                    this.active = false;
+                    return true; // Decayed
+                }
+                return false;
+            }
+            
+            draw(ctx) {
+                if (this.active) {
+                    ctx.fillStyle = '#3498db';
+                } else {
+                    ctx.fillStyle = '#e74c3c';
+                }
+                
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 4, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                if (!this.active) {
+                    // Draw decay symbol
+                    ctx.strokeStyle = '#e74c3c';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(this.x - 3, this.y - 3);
+                    ctx.lineTo(this.x + 3, this.y + 3);
+                    ctx.moveTo(this.x + 3, this.y - 3);
+                    ctx.lineTo(this.x - 3, this.y + 3);
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        function updateIsotopeInfo() {
+            const isotope = isotopes[selectedIsotope];
+            // For demonstration, we'll use a scaled half-life in seconds
+            const scaledHalfLife = isotope.halfLife > 100 ? 20 : isotope.halfLife;
+            halfLife = scaledHalfLife;
+            document.getElementById('halfLife').value = halfLife;
+            document.getElementById('halfLifeValue').textContent = halfLife + ' s';
+            updateCalculations();
+        }
+        
+        function updateCalculations() {
+            const decayConstant = Math.log(2) / halfLife;
+            const initialActivity = numNuclei * decayConstant;
+            
+            document.getElementById('decayConstant').textContent = decayConstant.toFixed(4) + ' s⁻¹';
+            document.getElementById('initialActivity').textContent = initialActivity.toFixed(2) + ' Bq';
+            
+            // Update graph axes based on half-life for optimal visualization
+            updateGraphAxes();
+        }
+        
+        function updateGraphAxes() {
+            // Set time axis to show approximately 6 half-lives
+            const maxTime = halfLife * 6;
+            nVsTimeGraph.options.scales.x.max = maxTime;
+            activityVsTimeGraph.options.scales.x.max = maxTime;
+            
+            // Set Y-axis to show full range
+            nVsTimeGraph.options.scales.y.max = numNuclei * 1.1;
+            
+            // Calculate maximum activity (initial activity)
+            const decayConstant = Math.log(2) / halfLife;
+            const maxActivity = numNuclei * decayConstant * 1.1;
+            activityVsTimeGraph.options.scales.y.max = Math.max(25, maxActivity);
+            
+            // Update axis step sizes
+            nVsTimeGraph.options.scales.x.ticks.stepSize = Math.ceil(maxTime / 6);
+            activityVsTimeGraph.options.scales.x.ticks.stepSize = Math.ceil(maxTime / 6);
+            nVsTimeGraph.options.scales.y.ticks.stepSize = Math.ceil(numNuclei / 5);
+            activityVsTimeGraph.options.scales.y.ticks.stepSize = Math.max(5, Math.ceil(maxActivity / 5));
+            
+            // Update graphs to apply new scales
+            nVsTimeGraph.update();
+            activityVsTimeGraph.update();
+        }
+        
+        function startDecay() {
+            isDecaying = true;
+            isPaused = false;
+            document.getElementById('startDecay').textContent = 'Restart';
+            document.getElementById('pauseDecay').textContent = 'Pause';
+            document.getElementById('pauseDecay').classList.remove('active');
+        }
+        
+        function resetSimulation() {
+            isDecaying = false;
+            isPaused = false;
+            time = 0;
+            nuclei = [];
+            timeData = [];
+            actualNData = [];
+            theoreticalNData = [];
+            activityData = [];
+            
+            // Create nuclei
+            for (let i = 0; i < numNuclei; i++) {
+                const x = Math.random() * (canvas.width - 40) + 20;
+                const y = Math.random() * (canvas.height - 40) + 20;
+                nuclei.push(new Nucleus(x, y));
+            }
+            
+            updateDisplay();
+            updateGraphs();
+            updateCalculations();
+            
+            document.getElementById('startDecay').textContent = 'Start Decay';
+            document.getElementById('pauseDecay').textContent = 'Pause';
+            document.getElementById('pauseDecay').classList.remove('active');
+        }
+        
+        function updateDisplay() {
+            const activeCount = nuclei.filter(n => n.active).length;
+            const decayedCount = nuclei.filter(n => !n.active).length;
+            
+            document.getElementById('activeNuclei').textContent = activeCount;
+            document.getElementById('decayedNuclei').textContent = decayedCount;
+            document.getElementById('timeElapsed').textContent = time.toFixed(1) + ' s';
+            document.getElementById('halfLivesPassed').textContent = (time / halfLife).toFixed(2);
+            
+            const decayConstant = Math.log(2) / halfLife;
+            const currentActivity = activeCount * decayConstant;
+            document.getElementById('currentActivity').textContent = currentActivity.toFixed(2) + ' Bq';
+            
+            const theoreticalN = numNuclei * Math.exp(-decayConstant * time);
+            document.getElementById('theoreticalN').textContent = Math.round(theoreticalN);
+        }
+        
+        function updateGraphs() {
+            // Update N vs Time graph with fixed axes
+            nVsTimeGraph.data.labels = timeData.map(t => t.toFixed(1));
+            nVsTimeGraph.data.datasets[0].data = actualNData;
+            nVsTimeGraph.data.datasets[1].data = theoreticalNData;
+            nVsTimeGraph.update('none');
+            
+            // Update Activity vs Time graph with fixed axes
+            activityVsTimeGraph.data.labels = timeData.map(t => t.toFixed(1));
+            activityVsTimeGraph.data.datasets[0].data = activityData;
+            activityVsTimeGraph.update('none');
+        }
+        
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw nuclei
+            nuclei.forEach(nucleus => nucleus.draw(ctx));
+            
+            if (isDecaying && !isPaused) {
+                // Get time scale factor
+                const timeScaleFactors = {
+                    'realtime': 1,
+                    'fast': 10,
+                    'veryfast': 100,
+                    'instant': 1000
+                };
+                const scaleFactor = timeScaleFactors[timeScale];
+                const dt = 0.05 * scaleFactor; // 50ms base time step
+                
+                // Update nuclei
+                let decayedThisFrame = 0;
+                nuclei.forEach(nucleus => {
+                    if (nucleus.update(time)) {
+                        decayedThisFrame++;
+                    }
+                });
+                
+                time += dt;
+                
+                // Update data
+                const activeCount = nuclei.filter(n => n.active).length;
+                const decayConstant = Math.log(2) / halfLife;
+                const theoreticalN = numNuclei * Math.exp(-decayConstant * time);
+                const activity = activeCount * decayConstant;
+                
+                timeData.push(time);
+                actualNData.push(activeCount);
+                theoreticalNData.push(theoreticalN);
+                activityData.push(activity);
+                
+                                
+                if (Math.floor(time * 10) % 5 === 0) {
+                    updateGraphs();
+                }
+                
+                updateDisplay();
+            }
+            
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // Initialize
+        document.querySelector('.isotope-option[data-isotope="carbon-14"]').classList.add('selected');
+        resetSimulation();
+        animate();
+    </script>
+</body>
+</html>

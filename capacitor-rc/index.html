@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RC Circuit Charge/Discharge Simulator</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>RC Circuit Charge/Discharge Simulator</h1>
+        
+        <div class="theory-section">
+            <h2>RC Circuit Theory</h2>
+            <p>An RC circuit consists of a resistor (R) and capacitor (C) connected in series. When voltage is applied, the capacitor charges through the resistor, and when removed, it discharges through the resistor.</p>
+            
+            <div class="equation">Q = Q₀(1 - e^(-t/RC))</div>
+            <p>Charge on capacitor during charging, where Q₀ is maximum charge.</p>
+            
+            <div class="equation">Q = Q₀e^(-t/RC)</div>
+            <p>Charge on capacitor during discharging.</p>
+            
+            <div class="equation">V = V₀(1 - e^(-t/RC))</div>
+            <p>Voltage across capacitor during charging.</p>
+            
+            <div class="equation">I = (V₀/R)e^(-t/RC)</div>
+            <p>Current through circuit during charging.</p>
+            
+            <div class="equation">τ = RC</div>
+            <p>Time constant - time to reach 63.2% of final value.</p>
+        </div>
+        
+        <div class="simulation-container">
+            <div class="circuit-container">
+                <h3>Circuit Diagram</h3>
+                <canvas id="circuitCanvas"></canvas>
+                <div id="circuitState" class="circuit-state idle">Circuit Idle</div>
+            </div>
+            
+            <div class="controls">
+                <h3>Controls</h3>
+                
+                <div class="control-group">
+                    <label for="resistance">Resistance (Ω):</label>
+                    <input type="range" id="resistance" min="100" max="10000" step="100" value="1000">
+                    <div class="value" id="resistanceValue">1000 Ω</div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="capacitance">Capacitance (μF):</label>
+                    <input type="range" id="capacitance" min="1" max="100" step="1" value="10">
+                    <div class="value" id="capacitanceValue">10 μF</div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="voltage">Source Voltage (V):</label>
+                    <input type="range" id="voltage" min="1" max="12" step="0.5" value="6">
+                    <div class="value" id="voltageValue">6.0 V</div>
+                </div>
+                
+                <div class="control-group">
+                    <button id="chargeBtn">Start Charging</button>
+                    <button id="dischargeBtn">Start Discharging</button>
+                    <button id="resetBtn">Reset</button>
+                </div>
+                
+                <div class="status-display">
+                    <h4>Circuit Status</h4>
+                    <div class="status-item">
+                        <span>Time Constant (τ):</span>
+                        <span id="timeConstant">0.00 ms</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Current Charge:</span>
+                        <span id="currentCharge">0.00 μC</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Current Voltage:</span>
+                        <span id="currentVoltage">0.00 V</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Current Current:</span>
+                        <span id="currentCurrent">0.00 mA</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Time Elapsed:</span>
+                        <span id="timeElapsed">0.00 s</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="graphs-container">
+            <div class="graph-box">
+                <h3>Charge vs Time</h3>
+                <canvas id="chargeGraph"></canvas>
+            </div>
+            <div class="graph-box">
+                <h3>Voltage vs Time</h3>
+                <canvas id="voltageGraph"></canvas>
+            </div>
+            <div class="graph-box">
+                <h3>Current vs Time</h3>
+                <canvas id="currentGraph"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('circuitCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Simulation variables
+        let resistance = 1000;
+        let capacitance = 10e-6;
+        let sourceVoltage = 6;
+        let time = 0;
+        let isCharging = false;
+        let isDischarging = false;
+        let animationId;
+        let charge = 0;
+        let maxCharge = 0;
+        
+        // Graph data
+        let timeData = [];
+        let chargeData = [];
+        let voltageData = [];
+        let currentData = [];
+        let maxDataPoints = 200;
+        
+        // Graph setup
+        const chargeGraph = new Chart(document.getElementById('chargeGraph'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Charge (μC)',
+                    data: [],
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time (s)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Charge (μC)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#2c3e50' }
+                    }
+                }
+            }
+        });
+        
+        const voltageGraph = new Chart(document.getElementById('voltageGraph'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Voltage (V)',
+                    data: [],
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time (s)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Voltage (V)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#2c3e50' }
+                    }
+                }
+            }
+        });
+        
+        const currentGraph = new Chart(document.getElementById('currentGraph'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Current (mA)',
+                    data: [],
+                    borderColor: '#2ecc71',
+                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time (s)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Current (mA)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#2c3e50' }
+                    }
+                }
+            }
+        });
+        
+        // Control event listeners
+        document.getElementById('resistance').addEventListener('input', (e) => {
+            resistance = parseFloat(e.target.value);
+            document.getElementById('resistanceValue').textContent = resistance + ' Ω';
+            updateCalculations();
+        });
+        
+        document.getElementById('capacitance').addEventListener('input', (e) => {
+            capacitance = parseFloat(e.target.value) * 1e-6;
+            document.getElementById('capacitanceValue').textContent = e.target.value + ' μF';
+            updateCalculations();
+        });
+        
+        document.getElementById('voltage').addEventListener('input', (e) => {
+            sourceVoltage = parseFloat(e.target.value);
+            document.getElementById('voltageValue').textContent = sourceVoltage.toFixed(1) + ' V';
+            updateCalculations();
+        });
+        
+        document.getElementById('chargeBtn').addEventListener('click', () => {
+            if (!isCharging) {
+                startCharging();
+            }
+        });
+        
+        document.getElementById('dischargeBtn').addEventListener('click', () => {
+            if (!isDischarging && charge > 0) {
+                startDischarging();
+            }
+        });
+        
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            reset();
+        });
+        
+        function updateCalculations() {
+            const timeConstant = resistance * capacitance;
+            maxCharge = capacitance * sourceVoltage;
+            
+            document.getElementById('timeConstant').textContent = (timeConstant * 1000).toFixed(2) + ' ms';
+        }
+        
+        function startCharging() {
+            isCharging = true;
+            isDischarging = false;
+            time = 0;
+            updateCircuitState();
+        }
+        
+        function startDischarging() {
+            isCharging = false;
+            isDischarging = true;
+            time = 0;
+            updateCircuitState();
+        }
+        
+        function reset() {
+            isCharging = false;
+            isDischarging = false;
+            time = 0;
+            charge = 0;
+            timeData = [];
+            chargeData = [];
+            voltageData = [];
+            currentData = [];
+            updateGraphs();
+            updateCircuitState();
+            updateStatus();
+        }
+        
+        function updateCircuitState() {
+            const stateElement = document.getElementById('circuitState');
+            if (isCharging) {
+                stateElement.textContent = 'Charging';
+                stateElement.className = 'circuit-state charging';
+            } else if (isDischarging) {
+                stateElement.textContent = 'Discharging';
+                stateElement.className = 'circuit-state discharging';
+            } else {
+                stateElement.textContent = 'Circuit Idle';
+                stateElement.className = 'circuit-state idle';
+            }
+        }
+        
+        function updateStatus() {
+            const voltage = charge / capacitance;
+            const current = isCharging ? (sourceVoltage - voltage) / resistance : 
+                         isDischarging ? -voltage / resistance : 0;
+            
+            document.getElementById('currentCharge').textContent = (charge * 1e6).toFixed(2) + ' μC';
+            document.getElementById('currentVoltage').textContent = voltage.toFixed(2) + ' V';
+            document.getElementById('currentCurrent').textContent = (current * 1000).toFixed(2) + ' mA';
+            document.getElementById('timeElapsed').textContent = time.toFixed(2) + ' s';
+        }
+        
+        function updateGraphs() {
+            chargeGraph.data.labels = timeData.map(t => t.toFixed(2));
+            chargeGraph.data.datasets[0].data = chargeData.map(c => c * 1e6);
+            chargeGraph.update('none');
+            
+            voltageGraph.data.labels = timeData.map(t => t.toFixed(2));
+            voltageGraph.data.datasets[0].data = voltageData;
+            voltageGraph.update('none');
+            
+            currentGraph.data.labels = timeData.map(t => t.toFixed(2));
+            currentGraph.data.datasets[0].data = currentData.map(c => c * 1000);
+            currentGraph.update('none');
+        }
+        
+        function drawCircuit() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const scale = Math.min(canvas.width, canvas.height) / 300;
+            
+            // Draw battery
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(centerX - 100 * scale, centerY - 50 * scale);
+            ctx.lineTo(centerX - 100 * scale, centerY + 50 * scale);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(centerX - 80 * scale, centerY - 30 * scale);
+            ctx.lineTo(centerX - 80 * scale, centerY + 30 * scale);
+            ctx.stroke();
+            
+            // Draw resistor (zigzag)
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            const resistorStart = centerX - 80 * scale;
+            const resistorEnd = centerX;
+            const resistorY = centerY - 80 * scale;
+            ctx.moveTo(resistorStart, resistorY);
+            
+            for (let i = 0; i < 7; i++) {
+                const x = resistorStart + (resistorEnd - resistorStart) * i / 6;
+                const y = resistorY + (i % 2 === 0 ? -10 : 10) * scale;
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(resistorEnd, resistorY);
+            ctx.stroke();
+            
+            // Draw capacitor plates
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(centerX + 20 * scale, centerY - 80 * scale);
+            ctx.lineTo(centerX + 20 * scale, centerY - 40 * scale);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(centerX + 40 * scale, centerY - 80 * scale);
+            ctx.lineTo(centerX + 40 * scale, centerY - 40 * scale);
+            ctx.stroke();
+            
+            // Draw connecting wires
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 2;
+            
+            // Top wire
+            ctx.beginPath();
+            ctx.moveTo(centerX - 100 * scale, centerY - 50 * scale);
+            ctx.lineTo(centerX - 100 * scale, centerY - 80 * scale);
+            ctx.lineTo(resistorStart, centerY - 80 * scale);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(resistorEnd, centerY - 80 * scale);
+            ctx.lineTo(centerX + 20 * scale, centerY - 80 * scale);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(centerX + 40 * scale, centerY - 80 * scale);
+            ctx.lineTo(centerX + 100 * scale, centerY - 80 * scale);
+            ctx.lineTo(centerX + 100 * scale, centerY - 50 * scale);
+            ctx.stroke();
+            
+            // Bottom wire
+            ctx.beginPath();
+            ctx.moveTo(centerX - 100 * scale, centerY + 50 * scale);
+            ctx.lineTo(centerX - 100 * scale, centerY + 80 * scale);
+            ctx.lineTo(centerX + 100 * scale, centerY + 80 * scale);
+            ctx.lineTo(centerX + 100 * scale, centerY + 50 * scale);
+            ctx.stroke();
+            
+            // Draw charge indicators on capacitor
+            if (charge > 0) {
+                const chargeLevel = charge / maxCharge;
+                ctx.fillStyle = `rgba(52, 152, 219, ${chargeLevel})`;
+                
+                // Positive plate
+                ctx.fillRect(centerX + 15 * scale, centerY - 40 * scale, 10 * scale, -30 * scale * chargeLevel);
+                
+                // Negative plate
+                ctx.fillStyle = `rgba(231, 76, 60, ${chargeLevel})`;
+                ctx.fillRect(centerX + 35 * scale, centerY - 40 * scale, 10 * scale, -30 * scale * chargeLevel);
+            }
+            
+            // Draw current flow indicator
+            if (isCharging || isDischarging) {
+                const current = isCharging ? (sourceVoltage - charge / capacitance) / resistance : 
+                             -(charge / capacitance) / resistance;
+                const currentIntensity = Math.abs(current) / (sourceVoltage / resistance);
+                
+                ctx.strokeStyle = `rgba(46, 204, 113, ${currentIntensity})`;
+                ctx.lineWidth = 4;
+                ctx.setLineDash([10, 10]);
+                ctx.lineDashOffset = -time * 50;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX - 100 * scale, centerY - 80 * scale);
+                ctx.lineTo(centerX - 100 * scale, centerY + 80 * scale);
+                ctx.lineTo(centerX + 100 * scale, centerY + 80 * scale);
+                ctx.lineTo(centerX + 100 * scale, centerY - 80 * scale);
+                ctx.lineTo(centerX - 100 * scale, centerY - 80 * scale);
+                ctx.stroke();
+                
+                ctx.setLineDash([]);
+            }
+            
+            // Labels
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = '14px Arial';
+            ctx.fillText('V', centerX - 110 * scale, centerY - 60 * scale);
+            ctx.fillText('R', centerX - 50 * scale, centerY - 90 * scale);
+            ctx.fillText('C', centerX + 25 * scale, centerY - 90 * scale);
+        }
+        
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawCircuit();
+            
+            if (isCharging || isDischarging) {
+                const timeConstant = resistance * capacitance;
+                const dt = 0.01; // Much slower time step for better learning
+                
+                if (isCharging) {
+                    charge = maxCharge * (1 - Math.exp(-time / timeConstant));
+                } else if (isDischarging) {
+                    charge = charge * Math.exp(-dt / timeConstant);
+                }
+                
+                time += dt;
+                
+                const voltage = charge / capacitance;
+                const current = isCharging ? (sourceVoltage - voltage) / resistance : 
+                             isDischarging ? -voltage / resistance : 0;
+                
+                timeData.push(time);
+                chargeData.push(charge);
+                voltageData.push(voltage);
+                currentData.push(current);
+                
+                if (timeData.length > maxDataPoints) {
+                    timeData.shift();
+                    chargeData.shift();
+                    voltageData.shift();
+                    currentData.shift();
+                }
+                
+                if (Math.floor(time * 25) % 10 === 0) { // Slower graph updates
+                    updateGraphs();
+                }
+                
+                updateStatus();
+                
+                // Stop conditions
+                if (isCharging && charge >= 0.99 * maxCharge) {
+                    isCharging = false;
+                    updateCircuitState();
+                } else if (isDischarging && charge <= 0.01 * maxCharge) {
+                    isDischarging = false;
+                    charge = 0;
+                    updateCircuitState();
+                }
+            }
+            
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // Initialize
+        updateCalculations();
+        animate();
+    </script>
+</body>
+</html>

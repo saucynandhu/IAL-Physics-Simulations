@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hertzsprung-Russell Diagram</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Hertzsprung-Russell Diagram</h1>
+        
+        <div class="theory-section">
+            <h2>Understanding the HR Diagram</h2>
+            <p>The HR diagram plots stars by their temperature and luminosity, revealing patterns in stellar evolution.</p>
+            
+            <div class="equation">L = 4πR²σT⁴</div>
+            <p>Stefan-Boltzmann Law: Luminosity depends on radius and temperature.</p>
+            
+            <div class="equation">L ∝ M³·⁵</div>
+            <p>Mass-Luminosity Relation for main sequence stars.</p>
+            
+            <div class="equation">λₘₐₓ = b/T</div>
+            <p>Wien's Law: Peak wavelength inversely proportional to temperature. Hot stars appear blue, cool stars appear red.</p>
+        </div>
+        
+        <div class="simulation-container">
+            <div class="hr-container">
+                <h3>Interactive HR Diagram</h3>
+                <canvas id="hrCanvas"></canvas>
+                <div class="hr-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f39c12;"></div>
+                        <span>Sun (Reference)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #3498db;"></div>
+                        <span>Main Sequence</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #e74c3c;"></div>
+                        <span>Giants</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #9b59b6;"></div>
+                        <span>White Dwarfs</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-panel">
+                <h3>Star Information</h3>
+                
+                <div class="star-info">
+                    <h4>Selected Star</h4>
+                    <div class="star-property">
+                        <span>Name:</span>
+                        <span class="value" id="starName">Click on a star</span>
+                    </div>
+                    <div class="star-property">
+                        <span>Temperature:</span>
+                        <span class="value" id="starTemp">-</span>
+                    </div>
+                    <div class="star-property">
+                        <span>Luminosity:</span>
+                        <span class="value" id="starLuminosity">-</span>
+                    </div>
+                    <div class="star-property">
+                        <span>Radius:</span>
+                        <span class="value" id="starRadius">-</span>
+                    </div>
+                    <div class="star-property">
+                        <span>Mass:</span>
+                        <span class="value" id="starMass">-</span>
+                    </div>
+                    <div class="star-property">
+                        <span>Type:</span>
+                        <span class="value" id="starType">-</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <button id="toggleGrid">Toggle Grid</button>
+                    <button id="toggleLabels">Toggle Labels</button>
+                    <button id="toggleMainSequence">Show Main Sequence</button>
+                </div>
+                
+                <div class="star-categories">
+                    <h4>Notable Stars</h4>
+                    <div class="star-list">
+                        <div class="star-item" data-star="sun">
+                            <span class="star-dot" style="background: #f39c12;"></span>
+                            <span>Sun</span>
+                        </div>
+                        <div class="star-item" data-star="sirius">
+                            <span class="star-dot" style="background: #74b9ff;"></span>
+                            <span>Sirius</span>
+                        </div>
+                        <div class="star-item" data-star="betelgeuse">
+                            <span class="star-dot" style="background: #e17055;"></span>
+                            <span>Betelgeuse</span>
+                        </div>
+                        <div class="star-item" data-star="rigel">
+                            <span class="star-dot" style="background: #74b9ff;"></span>
+                            <span>Rigel</span>
+                        </div>
+                        <div class="star-item" data-star="proxima">
+                            <span class="star-dot" style="background: #d63031;"></span>
+                            <span>Proxima Centauri</span>
+                        </div>
+                        <div class="star-item" data-star="vega">
+                            <span class="star-dot" style="background: #a29bfe;"></span>
+                            <span>Vega</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('hrCanvas');
+        const ctx = canvas.getContext('2d');
+        const tooltip = document.getElementById('tooltip');
+        
+        // Set canvas size
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Essential star data with Sun prominently featured
+        const stars = [
+            // Our Sun - the reference point
+            { name: "Sun", temp: 5778, luminosity: 1, radius: 1, mass: 1, type: "mainsequence", color: "#f39c12", size: 8 },
+            
+            // Main sequence stars
+            { name: "Proxima Centauri", temp: 3042, luminosity: 0.0017, radius: 0.154, mass: 0.12, type: "mainsequence", color: "#d63031", size: 4 },
+            { name: "Alpha Centauri A", temp: 5790, luminosity: 1.519, radius: 1.227, mass: 1.1, type: "mainsequence", color: "#f39c12", size: 6 },
+            { name: "Sirius A", temp: 9940, luminosity: 25.4, radius: 1.71, mass: 2.06, type: "mainsequence", color: "#74b9ff", size: 7 },
+            { name: "Vega", temp: 9602, luminosity: 37, radius: 2.36, mass: 2.14, type: "mainsequence", color: "#a29bfe", size: 7 },
+            { name: "Altair", temp: 7700, luminosity: 10.6, radius: 1.8, mass: 1.79, type: "mainsequence", color: "#fdcb6e", size: 6 },
+            { name: "Rigel", temp: 12100, luminosity: 120000, radius: 78.9, mass: 21, type: "supergiant", color: "#74b9ff", size: 9 },
+            
+            // Giants and Supergiants
+            { name: "Arcturus", temp: 4286, luminosity: 170, radius: 25.4, mass: 1.08, type: "giant", color: "#e17055", size: 8 },
+            { name: "Aldebaran", temp: 3910, luminosity: 440, radius: 44.2, mass: 1.16, type: "giant", color: "#e17055", size: 8 },
+            { name: "Betelgeuse", temp: 3500, luminosity: 90000, radius: 887, mass: 20, type: "supergiant", color: "#d63031", size: 10 },
+            { name: "Antares", temp: 3660, luminosity: 65000, radius: 680, mass: 12, type: "supergiant", color: "#d63031", size: 10 },
+            { name: "Pollux", temp: 4890, luminosity: 32, radius: 8.8, mass: 1.91, type: "giant", color: "#f39c12", size: 7 },
+            { name: "Capella A", temp: 4970, luminosity: 79, radius: 12, mass: 2.69, type: "giant", color: "#f39c12", size: 8 },
+            
+            // White dwarfs
+            { name: "Sirius B", temp: 25200, luminosity: 0.026, radius: 0.0084, mass: 0.98, type: "whitedwarf", color: "#9b59b6", size: 5 },
+            { name: "Procyon B", temp: 7740, luminosity: 0.00055, radius: 0.0085, mass: 0.6, type: "whitedwarf", color: "#9b59b6", size: 5 },
+            
+            // Additional notable stars
+            { name: "Canopus", temp: 7350, luminosity: 10700, radius: 71, mass: 8.5, type: "supergiant", color: "#fdcb6e", size: 9 },
+            { name: "Deneb", temp: 8525, luminosity: 196000, radius: 203, mass: 19, type: "supergiant", color: "#a29bfe", size: 10 },
+            { name: "Spica", temp: 22400, luminosity: 16400, radius: 7.8, mass: 11.4, type: "giant", color: "#74b9ff", size: 8 },
+            { name: "Fomalhaut", temp: 8490, luminosity: 16.6, radius: 1.84, mass: 1.92, type: "mainsequence", color: "#fdcb6e", size: 6 },
+            { name: "Regulus", temp: 12200, luminosity: 288, radius: 4.15, mass: 3.4, type: "mainsequence", color: "#74b9ff", size: 7 }
+        ];
+        
+        // Simulation variables
+        let showGrid = true;
+        let showLabels = true;
+        let showMainSequence = false;
+        let selectedStar = null;
+        
+        // Control event listeners
+        document.getElementById('toggleGrid').addEventListener('click', () => {
+            showGrid = !showGrid;
+            drawHRDiagram();
+        });
+        
+        document.getElementById('toggleLabels').addEventListener('click', () => {
+            showLabels = !showLabels;
+            drawHRDiagram();
+        });
+        
+        document.getElementById('toggleMainSequence').addEventListener('click', () => {
+            showMainSequence = !showMainSequence;
+            document.getElementById('toggleMainSequence').classList.toggle('active', showMainSequence);
+            drawHRDiagram();
+        });
+        
+        // Star list click events
+        document.querySelectorAll('.star-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const starName = item.dataset.star;
+                const star = stars.find(s => s.name.toLowerCase().includes(starName));
+                if (star) {
+                    selectedStar = star;
+                    updateStarInfo(star);
+                    drawHRDiagram();
+                }
+            });
+        });
+        
+        // Canvas mouse events
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const clickedStar = getStarAtPosition(x, y);
+            if (clickedStar) {
+                selectedStar = clickedStar;
+                updateStarInfo(clickedStar);
+                drawHRDiagram();
+            }
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const hoverStar = getStarAtPosition(x, y);
+            if (hoverStar) {
+                showTooltip(e.clientX, e.clientY, hoverStar);
+                canvas.style.cursor = 'pointer';
+            } else {
+                hideTooltip();
+                canvas.style.cursor = 'crosshair';
+            }
+        });
+        
+        canvas.addEventListener('mouseleave', () => {
+            hideTooltip();
+        });
+        
+        function getStarAtPosition(x, y) {
+            const padding = 100;
+            const width = canvas.width - 2 * padding;
+            const height = canvas.height - 2 * padding;
+            
+            for (const star of stars) {
+                const starX = padding + width * (1 - (Math.log10(star.temp) - 3.3) / 1.7);
+                const starY = padding + height * (1 - (Math.log10(star.luminosity) + 2) / 8);
+                
+                const distance = Math.sqrt((x - starX) ** 2 + (y - starY) ** 2);
+                if (distance < star.size + 2) {
+                    return star;
+                }
+            }
+            return null;
+        }
+        
+        function showTooltip(x, y, star) {
+            tooltip.innerHTML = `
+                <strong>${star.name}</strong><br>
+                Temperature: ${star.temp} K<br>
+                Luminosity: ${star.luminosity} L☉<br>
+                Radius: ${star.radius} R☉<br>
+                Mass: ${star.mass} M☉<br>
+                Type: ${star.type.replace(/([A-Z])/g, ' $1').trim()}
+            `;
+            tooltip.style.left = x + 10 + 'px';
+            tooltip.style.top = y - 10 + 'px';
+            tooltip.style.display = 'block';
+        }
+        
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+        }
+        
+        function updateStarInfo(star) {
+            document.getElementById('starName').textContent = star.name;
+            document.getElementById('starTemp').textContent = star.temp + ' K';
+            document.getElementById('starLuminosity').textContent = star.luminosity + ' L☉';
+            document.getElementById('starRadius').textContent = star.radius + ' R☉';
+            document.getElementById('starMass').textContent = star.mass + ' M☉';
+            document.getElementById('starType').textContent = star.type.replace(/([A-Z])/g, ' $1').trim();
+        }
+        
+        function drawHRDiagram() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const padding = 100;
+            const width = canvas.width - 2 * padding;
+            const height = canvas.height - 2 * padding;
+            
+            // Draw background
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw main sequence band if enabled
+            if (showMainSequence) {
+                drawMainSequence(padding, width, height);
+            }
+            
+            // Draw grid
+            if (showGrid) {
+                drawGrid(padding, width, height);
+            }
+            
+            // Draw axes
+            drawAxes(padding, width, height);
+            
+            // Draw stars
+            stars.forEach(star => {
+                drawStar(star, padding, width, height);
+            });
+            
+            // Highlight selected star
+            if (selectedStar) {
+                highlightStar(selectedStar, padding, width, height);
+            }
+        }
+        
+        function drawGrid(padding, width, height) {
+            ctx.strokeStyle = 'rgba(149, 165, 166, 0.2)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 3]);
+            
+            // Vertical grid lines (temperature)
+            for (let i = 0; i <= 10; i++) {
+                const x = padding + (width * i / 10);
+                ctx.beginPath();
+                ctx.moveTo(x, padding);
+                ctx.lineTo(x, padding + height);
+                ctx.stroke();
+            }
+            
+            // Horizontal grid lines (luminosity)
+            for (let i = 0; i <= 10; i++) {
+                const y = padding + (height * i / 10);
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(padding + width, y);
+                ctx.stroke();
+            }
+            
+            ctx.setLineDash([]);
+        }
+        
+        function drawAxes(padding, width, height) {
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 2;
+            
+            // X-axis (temperature)
+            ctx.beginPath();
+            ctx.moveTo(padding, padding + height);
+            ctx.lineTo(padding + width, padding + height);
+            ctx.stroke();
+            
+            // Y-axis (luminosity)
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, padding + height);
+            ctx.stroke();
+            
+            // Temperature labels - logarithmic doubling
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            
+            const temps = [3000, 6000, 12000, 24000, 48000];
+            temps.forEach(temp => {
+                const x = padding + width * (1 - (Math.log10(temp) - 3.3) / 1.7);
+                ctx.fillText(temp + 'K', x, padding + height + 30);
+            });
+            
+            // Temperature axis title
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('Temperature (K)', padding + width / 2, canvas.height - 5);
+            
+            // Luminosity labels - clean and minimal
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'right';
+            
+            const lumLabels = [
+                { value: 100000, label: '10⁵' },
+                { value: 1000, label: '10³' },
+                { value: 10, label: '10' },
+                { value: 0.1, label: '0.1' },
+                { value: 0.001, label: '10⁻³' }
+            ];
+            
+            lumLabels.forEach(lum => {
+                const y = padding + height * (1 - (Math.log10(lum.value) + 2) / 8);
+                ctx.fillText(lum.label, padding - 10, y + 5);
+            });
+            
+            // Luminosity axis title
+            ctx.save();
+            ctx.translate(padding - 40, padding + height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('Luminosity (L☉)', 0, 0);
+            ctx.restore();
+        }
+        
+        function drawMainSequence(padding, width, height) {
+            ctx.fillStyle = 'rgba(52, 152, 219, 0.1)';
+            ctx.strokeStyle = 'rgba(52, 152, 219, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            
+            ctx.beginPath();
+            
+            // Main sequence approximation
+            for (let i = 0; i <= 100; i++) {
+                const temp = 3000 + i * 470;
+                const lum = Math.pow(temp / 5778, 4);
+                const x = padding + width * (1 - (Math.log10(temp) - 3.3) / 1.7);
+                const y = padding + height * (1 - (Math.log10(lum) + 2) / 8);
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            ctx.lineTo(padding + width, padding + height);
+            ctx.lineTo(padding, padding + height);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        function drawStar(star, padding, width, height) {
+            const x = padding + width * (1 - (Math.log10(star.temp) - 3.3) / 1.7);
+            const y = padding + height * (1 - (Math.log10(star.luminosity) + 2) / 8);
+            
+            // Draw star
+            ctx.fillStyle = star.color;
+            ctx.beginPath();
+            ctx.arc(x, y, star.size, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Add glow for bright stars
+            if (star.luminosity > 100) {
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = star.color;
+                ctx.beginPath();
+                ctx.arc(x, y, star.size * 0.6, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+            
+            // Draw star name if labels are enabled
+            if (showLabels && (star.luminosity > 10 || star.name === "Sun")) {
+                ctx.fillStyle = '#2c3e50';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(star.name, x, y - star.size - 8);
+            }
+        }
+        
+        function highlightStar(star, padding, width, height) {
+            const x = padding + width * (1 - (Math.log10(star.temp) - 3.3) / 1.7);
+            const y = padding + height * (1 - (Math.log10(star.luminosity) + 2) / 8);
+            
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(x, y, star.size + 10, 0, 2 * Math.PI);
+            ctx.stroke();
+            
+            // Draw selection indicator
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.arc(x, y, star.size + 15, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        // Initialize
+        drawHRDiagram();
+    </script>
+</body>
+</html>

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Harmonic Motion Simulator</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Simple Harmonic Motion Simulator</h1>
+        
+        <div class="theory-section">
+            <h2>Simple Harmonic Motion Theory</h2>
+            <p>Simple Harmonic Motion (SHM) is a type of periodic motion where the restoring force is directly proportional to the displacement and acts in the opposite direction to the displacement.</p>
+            
+            <div class="equation">x = A cos(ωt + φ)</div>
+            <p>Displacement equation, where A is amplitude, ω is angular frequency, t is time, and φ is phase constant.</p>
+            
+            <div class="equation">F = -kx</div>
+            <p>Hooke's Law - restoring force, where k is spring constant and x is displacement.</p>
+            
+            <div class="equation">T = 2π√(m/k)</div>
+            <p>Period of oscillation for mass-spring system, where m is mass and k is spring constant.</p>
+            
+            <div class="equation">T = 2π√(L/g)</div>
+            <p>Period of oscillation for simple pendulum, where L is length and g is gravitational acceleration.</p>
+            
+            <div class="equation">v = ±ω√(A² - x²)</div>
+            <p>Velocity as a function of displacement.</p>
+            
+            <div class="equation">a = -ω²x</div>
+            <p>Acceleration is always proportional to displacement and opposite in direction.</p>
+        </div>
+        
+        <div class="simulation-container">
+            <div class="shm-container">
+                <h3>Mass-Spring System</h3>
+                <canvas id="springCanvas"></canvas>
+                <div>Mass: <span id="springMassDisplay">1.0 kg</span> | Spring Constant: <span id="springKDisplay">10.0 N/m</span></div>
+            </div>
+            
+            <div class="shm-container">
+                <h3>Simple Pendulum</h3>
+                <canvas id="pendulumCanvas"></canvas>
+                <div>Length: <span id="pendulumLengthDisplay">1.0 m</span> | Mass: <span id="pendulumMassDisplay">1.0 kg</span></div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <h3>Controls</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">Mass-Spring Parameters</h4>
+                    
+                    <div class="control-group">
+                        <label for="springMass">Mass (kg):</label>
+                        <input type="range" id="springMass" min="0.1" max="5" step="0.1" value="1">
+                        <div class="value" id="springMassValue">1.0 kg</div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="springConstant">Spring Constant (N/m):</label>
+                        <input type="range" id="springConstant" min="1" max="50" step="1" value="10">
+                        <div class="value" id="springConstantValue">10.0 N/m</div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="springAmplitude">Amplitude (m):</label>
+                        <input type="range" id="springAmplitude" min="0.1" max="2" step="0.1" value="0.5">
+                        <div class="value" id="springAmplitudeValue">0.5 m</div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">Pendulum Parameters</h4>
+                    
+                    <div class="control-group">
+                        <label for="pendulumLength">Length (m):</label>
+                        <input type="range" id="pendulumLength" min="0.1" max="3" step="0.1" value="1">
+                        <div class="value" id="pendulumLengthValue">1.0 m</div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="pendulumMass">Mass (kg):</label>
+                        <input type="range" id="pendulumMass" min="0.1" max="5" step="0.1" value="1">
+                        <div class="value" id="pendulumMassValue">1.0 kg</div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="pendulumAngle">Initial Angle (degrees):</label>
+                        <input type="range" id="pendulumAngle" min="5" max="30" step="1" value="15">
+                        <div class="value" id="pendulumAngleValue">15°</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <button id="playPause">Pause</button>
+                <button id="reset">Reset</button>
+                <button id="syncPhase">Synchronize Phase</button>
+            </div>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Mass-Spring</th>
+                        <th>Pendulum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Period</td>
+                        <td id="springPeriod">0.00 s</td>
+                        <td id="pendulumPeriod">0.00 s</td>
+                    </tr>
+                    <tr>
+                        <td>Frequency</td>
+                        <td id="springFrequency">0.00 Hz</td>
+                        <td id="pendulumFrequency">0.00 Hz</td>
+                    </tr>
+                    <tr>
+                        <td>Angular Frequency</td>
+                        <td id="springOmega">0.00 rad/s</td>
+                        <td id="pendulumOmega">0.00 rad/s</td>
+                    </tr>
+                    <tr>
+                        <td>Max Velocity</td>
+                        <td id="springMaxVelocity">0.00 m/s</td>
+                        <td id="pendulumMaxVelocity">0.00 m/s</td>
+                    </tr>
+                    <tr>
+                        <td>Max Acceleration</td>
+                        <td id="springMaxAcceleration">0.00 m/s²</td>
+                        <td id="pendulumMaxAcceleration">0.00 m/s²</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="graphs-container">
+            <div class="graph-box">
+                <h3>Displacement vs Time</h3>
+                <canvas id="displacementGraph"></canvas>
+            </div>
+            <div class="graph-box">
+                <h3>Velocity vs Time</h3>
+                <canvas id="velocityGraph"></canvas>
+            </div>
+            <div class="graph-box">
+                <h3>Acceleration vs Time</h3>
+                <canvas id="accelerationGraph"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Canvas setup
+        const springCanvas = document.getElementById('springCanvas');
+        const springCtx = springCanvas.getContext('2d');
+        const pendulumCanvas = document.getElementById('pendulumCanvas');
+        const pendulumCtx = pendulumCanvas.getContext('2d');
+        
+        // Set canvas sizes
+        function resizeCanvases() {
+            springCanvas.width = springCanvas.offsetWidth;
+            springCanvas.height = springCanvas.offsetHeight;
+            pendulumCanvas.width = pendulumCanvas.offsetWidth;
+            pendulumCanvas.height = pendulumCanvas.offsetHeight;
+        }
+        resizeCanvases();
+        window.addEventListener('resize', resizeCanvases);
+        
+        // Simulation variables
+        let springMass = 1;
+        let springConstant = 10;
+        let springAmplitude = 0.5;
+        let pendulumLength = 1;
+        let pendulumMass = 1;
+        let pendulumAngle = 15;
+        
+        let time = 0;
+        let isPlaying = true;
+        let animationId;
+        let syncPhase = false;
+        
+        // Graph data
+        let timeData = [];
+        let springDisplacementData = [];
+        let pendulumDisplacementData = [];
+        let springVelocityData = [];
+        let pendulumVelocityData = [];
+        let springAccelerationData = [];
+        let pendulumAccelerationData = [];
+        let maxDataPoints = 200;
+        
+        // Graph setup
+        const displacementGraph = new Chart(document.getElementById('displacementGraph'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Spring Displacement',
+                    data: [],
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Pendulum Displacement',
+                    data: [],
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time (s)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Displacement (m)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#2c3e50' }
+                    }
+                }
+            }
+        });
+        
+        const velocityGraph = new Chart(document.getElementById('velocityGraph'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Spring Velocity',
+                    data: [],
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Pendulum Velocity',
+                    data: [],
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time (s)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Velocity (m/s)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#2c3e50' }
+                    }
+                }
+            }
+        });
+        
+        const accelerationGraph = new Chart(document.getElementById('accelerationGraph'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Spring Acceleration',
+                    data: [],
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Pendulum Acceleration',
+                    data: [],
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time (s)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Acceleration (m/s²)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#2c3e50' }
+                    }
+                }
+            }
+        });
+        
+        // Control event listeners
+        document.getElementById('springMass').addEventListener('input', (e) => {
+            springMass = parseFloat(e.target.value);
+            document.getElementById('springMassValue').textContent = springMass.toFixed(1) + ' kg';
+            document.getElementById('springMassDisplay').textContent = springMass.toFixed(1) + ' kg';
+            updateCalculations();
+        });
+        
+        document.getElementById('springConstant').addEventListener('input', (e) => {
+            springConstant = parseFloat(e.target.value);
+            document.getElementById('springConstantValue').textContent = springConstant.toFixed(1) + ' N/m';
+            document.getElementById('springKDisplay').textContent = springConstant.toFixed(1) + ' N/m';
+            updateCalculations();
+        });
+        
+        document.getElementById('springAmplitude').addEventListener('input', (e) => {
+            springAmplitude = parseFloat(e.target.value);
+            document.getElementById('springAmplitudeValue').textContent = springAmplitude.toFixed(1) + ' m';
+            updateCalculations();
+        });
+        
+        document.getElementById('pendulumLength').addEventListener('input', (e) => {
+            pendulumLength = parseFloat(e.target.value);
+            document.getElementById('pendulumLengthValue').textContent = pendulumLength.toFixed(1) + ' m';
+            document.getElementById('pendulumLengthDisplay').textContent = pendulumLength.toFixed(1) + ' m';
+            updateCalculations();
+        });
+        
+        document.getElementById('pendulumMass').addEventListener('input', (e) => {
+            pendulumMass = parseFloat(e.target.value);
+            document.getElementById('pendulumMassValue').textContent = pendulumMass.toFixed(1) + ' kg';
+            document.getElementById('pendulumMassDisplay').textContent = pendulumMass.toFixed(1) + ' kg';
+            updateCalculations();
+        });
+        
+        document.getElementById('pendulumAngle').addEventListener('input', (e) => {
+            pendulumAngle = parseFloat(e.target.value);
+            document.getElementById('pendulumAngleValue').textContent = pendulumAngle + '°';
+            updateCalculations();
+        });
+        
+        document.getElementById('playPause').addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            document.getElementById('playPause').textContent = isPlaying ? 'Pause' : 'Play';
+            document.getElementById('playPause').classList.toggle('active', !isPlaying);
+        });
+        
+        document.getElementById('reset').addEventListener('click', () => {
+            time = 0;
+            timeData = [];
+            springDisplacementData = [];
+            pendulumDisplacementData = [];
+            springVelocityData = [];
+            pendulumVelocityData = [];
+            springAccelerationData = [];
+            pendulumAccelerationData = [];
+            updateGraphs();
+        });
+        
+        document.getElementById('syncPhase').addEventListener('click', () => {
+            syncPhase = !syncPhase;
+            document.getElementById('syncPhase').classList.toggle('active', syncPhase);
+        });
+        
+        function updateCalculations() {
+            const g = 9.81;
+            
+            // Spring calculations
+            const springOmega = Math.sqrt(springConstant / springMass);
+            const springPeriod = 2 * Math.PI / springOmega;
+            const springFrequency = 1 / springPeriod;
+            const springMaxVelocity = springOmega * springAmplitude;
+            const springMaxAcceleration = springOmega * springOmega * springAmplitude;
+            
+            // Pendulum calculations (small angle approximation)
+            const pendulumOmega = Math.sqrt(g / pendulumLength);
+            const pendulumPeriod = 2 * Math.PI / pendulumOmega;
+            const pendulumFrequency = 1 / pendulumPeriod;
+            const pendulumMaxVelocity = pendulumOmega * pendulumLength * Math.sin(pendulumAngle * Math.PI / 180);
+            const pendulumMaxAcceleration = pendulumOmega * pendulumOmega * pendulumLength * Math.sin(pendulumAngle * Math.PI / 180);
+            
+            // Update display
+            document.getElementById('springPeriod').textContent = springPeriod.toFixed(2) + ' s';
+            document.getElementById('springFrequency').textContent = springFrequency.toFixed(2) + ' Hz';
+            document.getElementById('springOmega').textContent = springOmega.toFixed(2) + ' rad/s';
+            document.getElementById('springMaxVelocity').textContent = springMaxVelocity.toFixed(2) + ' m/s';
+            document.getElementById('springMaxAcceleration').textContent = springMaxAcceleration.toFixed(2) + ' m/s²';
+            
+            document.getElementById('pendulumPeriod').textContent = pendulumPeriod.toFixed(2) + ' s';
+            document.getElementById('pendulumFrequency').textContent = pendulumFrequency.toFixed(2) + ' Hz';
+            document.getElementById('pendulumOmega').textContent = pendulumOmega.toFixed(2) + ' rad/s';
+            document.getElementById('pendulumMaxVelocity').textContent = pendulumMaxVelocity.toFixed(2) + ' m/s';
+            document.getElementById('pendulumMaxAcceleration').textContent = pendulumMaxAcceleration.toFixed(2) + ' m/s²';
+        }
+        
+        function updateGraphs() {
+            displacementGraph.data.labels = timeData.map(t => t.toFixed(2));
+            displacementGraph.data.datasets[0].data = springDisplacementData;
+            displacementGraph.data.datasets[1].data = pendulumDisplacementData;
+            displacementGraph.update('none');
+            
+            velocityGraph.data.labels = timeData.map(t => t.toFixed(2));
+            velocityGraph.data.datasets[0].data = springVelocityData;
+            velocityGraph.data.datasets[1].data = pendulumVelocityData;
+            velocityGraph.update('none');
+            
+            accelerationGraph.data.labels = timeData.map(t => t.toFixed(2));
+            accelerationGraph.data.datasets[0].data = springAccelerationData;
+            accelerationGraph.data.datasets[1].data = pendulumAccelerationData;
+            accelerationGraph.update('none');
+        }
+        
+        function drawSpringSystem() {
+            springCtx.clearRect(0, 0, springCanvas.width, springCanvas.height);
+            
+            const centerX = springCanvas.width / 2;
+            const centerY = springCanvas.height / 2;
+            const scale = Math.min(springCanvas.width, springCanvas.height) / 200;
+            
+            // Calculate spring position
+            const springOmega = Math.sqrt(springConstant / springMass);
+            const springX = springAmplitude * Math.cos(springOmega * time) * 100 * scale;
+            
+            // Draw wall
+            springCtx.fillStyle = '#2c3e50';
+            springCtx.fillRect(centerX - 150 * scale, centerY - 60 * scale, 10 * scale, 120 * scale);
+            
+            // Draw spring
+            springCtx.strokeStyle = '#3498db';
+            springCtx.lineWidth = 3;
+            springCtx.beginPath();
+            
+            const springStartX = centerX - 140 * scale;
+            const springEndX = centerX + springX - 20 * scale;
+            const coils = 15;
+            
+            springCtx.moveTo(springStartX, centerY);
+            for (let i = 0; i <= coils; i++) {
+                const x = springStartX + (springEndX - springStartX) * i / coils;
+                const y = centerY + (i % 2 === 0 ? -15 : 15) * scale;
+                springCtx.lineTo(x, y);
+            }
+            springCtx.stroke();
+            
+            // Draw mass
+            springCtx.fillStyle = '#e74c3c';
+            springCtx.fillRect(centerX + springX - 20 * scale, centerY - 20 * scale, 40 * scale, 40 * scale);
+            
+            // Draw equilibrium line
+            springCtx.strokeStyle = 'rgba(149, 165, 166, 0.5)';
+            springCtx.lineWidth = 2;
+            springCtx.setLineDash([5, 5]);
+            springCtx.beginPath();
+            springCtx.moveTo(centerX, centerY - 40 * scale);
+            springCtx.lineTo(centerX, centerY + 40 * scale);
+            springCtx.stroke();
+            springCtx.setLineDash([]);
+        }
+        
+        function drawPendulum() {
+            pendulumCtx.clearRect(0, 0, pendulumCanvas.width, pendulumCanvas.height);
+            
+            const centerX = pendulumCanvas.width / 2;
+            const centerY = 50;
+            const scale = Math.min(pendulumCanvas.width, pendulumCanvas.height) / 200;
+            
+            // Calculate pendulum position
+            const g = 9.81;
+            const pendulumOmega = Math.sqrt(g / pendulumLength);
+            const angle = pendulumAngle * Math.PI / 180 * Math.cos(pendulumOmega * time);
+            
+            const bobX = centerX + pendulumLength * Math.sin(angle) * 100 * scale;
+            const bobY = centerY + pendulumLength * Math.cos(angle) * 100 * scale;
+            
+            // Draw support
+            pendulumCtx.fillStyle = '#2c3e50';
+            pendulumCtx.fillRect(centerX - 30 * scale, centerY - 10 * scale, 60 * scale, 10 * scale);
+            
+            // Draw string
+            pendulumCtx.strokeStyle = '#34495e';
+            pendulumCtx.lineWidth = 2;
+            pendulumCtx.beginPath();
+            pendulumCtx.moveTo(centerX, centerY);
+            pendulumCtx.lineTo(bobX, bobY);
+            pendulumCtx.stroke();
+            
+            // Draw bob
+            pendulumCtx.fillStyle = '#e74c3c';
+            pendulumCtx.beginPath();
+            pendulumCtx.arc(bobX, bobY, 15 * scale, 0, 2 * Math.PI);
+            pendulumCtx.fill();
+            
+            // Draw equilibrium line
+            pendulumCtx.strokeStyle = 'rgba(149, 165, 166, 0.5)';
+            pendulumCtx.lineWidth = 2;
+            pendulumCtx.setLineDash([5, 5]);
+            pendulumCtx.beginPath();
+            pendulumCtx.moveTo(centerX, centerY);
+            pendulumCtx.lineTo(centerX, centerY + pendulumLength * 100 * scale);
+            pendulumCtx.stroke();
+            pendulumCtx.setLineDash([]);
+        }
+        
+        function animate() {
+            drawSpringSystem();
+            drawPendulum();
+            
+            if (isPlaying) {
+                const dt = 0.02;
+                time += dt;
+                
+                // Calculate current values
+                const springOmega = Math.sqrt(springConstant / springMass);
+                const g = 9.81;
+                const pendulumOmega = Math.sqrt(g / pendulumLength);
+                
+                const phaseOffset = syncPhase ? 0 : 0;
+                
+                const springDisplacement = springAmplitude * Math.cos(springOmega * time + phaseOffset);
+                const springVelocity = -springAmplitude * springOmega * Math.sin(springOmega * time + phaseOffset);
+                const springAcceleration = -springAmplitude * springOmega * springOmega * Math.cos(springOmega * time + phaseOffset);
+                
+                const pendulumAngleRad = pendulumAngle * Math.PI / 180 * Math.cos(pendulumOmega * time + phaseOffset);
+                const pendulumDisplacement = pendulumLength * Math.sin(pendulumAngleRad);
+                const pendulumVelocity = pendulumLength * pendulumOmega * Math.cos(pendulumAngle * Math.PI / 180) * Math.cos(pendulumOmega * time + phaseOffset);
+                const pendulumAcceleration = -pendulumLength * pendulumOmega * pendulumOmega * Math.sin(pendulumAngleRad);
+                
+                timeData.push(time);
+                springDisplacementData.push(springDisplacement);
+                pendulumDisplacementData.push(pendulumDisplacement);
+                springVelocityData.push(springVelocity);
+                pendulumVelocityData.push(pendulumVelocity);
+                springAccelerationData.push(springAcceleration);
+                pendulumAccelerationData.push(pendulumAcceleration);
+                
+                if (timeData.length > maxDataPoints) {
+                    timeData.shift();
+                    springDisplacementData.shift();
+                    pendulumDisplacementData.shift();
+                    springVelocityData.shift();
+                    pendulumVelocityData.shift();
+                    springAccelerationData.shift();
+                    pendulumAccelerationData.shift();
+                }
+                
+                if (Math.floor(time * 50) % 5 === 0) {
+                    updateGraphs();
+                }
+            }
+            
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // Initialize
+        updateCalculations();
+        animate();
+    </script>
+</body>
+</html>

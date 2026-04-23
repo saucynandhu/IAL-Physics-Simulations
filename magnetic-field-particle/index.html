@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Chamber - Charged Particles in Magnetic Field</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css">
+    <script src="https="cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Cloud Chamber - Charged Particles in Magnetic Field</h1>
+        
+        <div class="theory-section">
+            <h2>Magnetic Fields & Particle Physics</h2>
+            <p>A cloud chamber visualizes charged particles moving through a uniform magnetic field. The radius of curvature depends on the particle's momentum, charge, and the field strength - fundamental concepts in particle physics.</p>
+            
+            <div class="equation">r = p/BQ = mv/BQ</div>
+            <p>Radius of curvature: larger momentum or smaller charge → larger radius</p>
+            
+            <div class="equation">ω = BQ/m</div>
+            <p>Cyclotron frequency: depends on charge-to-mass ratio (Q/m)</p>
+            
+            <div class="equation">F = QvB sin(θ)</div>
+            <p>Lorentz force: perpendicular to both velocity and magnetic field</p>
+            
+            <div class="equation">p = mv</div>
+            <p>Momentum: heavier particles or faster particles have larger momentum</p>
+            
+            <div class="equation">T = 2πm/BQ</div>
+            <p>Period: independent of velocity - key insight for particle accelerators</p>
+        </div>
+        
+        <div class="simulation-container">
+            <div class="chamber-container">
+                <h3>Cloud Chamber Visualization</h3>
+                <canvas id="chamberCanvas"></canvas>
+                <div class="particle-selector">
+                    <h4>Select Particle Type:</h4>
+                    <div class="particle-options">
+                        <div class="particle-option" data-particle="electron">
+                            <div class="particle-preview negative"></div>
+                            <div>
+                                <div class="particle-name">Electron</div>
+                                <div class="particle-properties">Q = -1.6×10⁻¹⁹ C | m = 9.1×10⁻³¹ kg</div>
+                                <div class="particle-ratio">Q/m = -1.76×10¹¹ C/kg</div>
+                            </div>
+                        </div>
+                        <div class="particle-option" data-particle="proton">
+                            <div class="particle-preview positive"></div>
+                            <div>
+                                <div class="particle-name">Proton</div>
+                                <div class="particle-properties">Q = +1.6×10⁻¹⁹ C | m = 1.67×10⁻²⁷ kg</div>
+                                <div class="particle-ratio">Q/m = +9.58×10⁷ C/kg</div>
+                            </div>
+                        </div>
+                        <div class="particle-option" data-particle="alpha">
+                            <div class="particle-preview positive"></div>
+                            <div>
+                                <div class="particle-name">Alpha Particle</div>
+                                <div class="particle-properties">Q = +3.2×10⁻¹⁹ C | m = 6.64×10⁻²⁷ kg</div>
+                                <div class="particle-ratio">Q/m = +4.82×10⁷ C/kg</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field-legend">
+                    <div class="field-item">
+                        <div class="field-color" style="background: #3498db;"></div>
+                        <span>Magnetic Field (⊗ into page)</span>
+                    </div>
+                    <div class="field-item">
+                        <div class="field-color" style="background: #e74c3c;"></div>
+                        <span>Positive Charge (clockwise)</span>
+                    </div>
+                    <div class="field-item">
+                        <div class="field-color" style="background: #2ecc71;"></div>
+                        <span>Negative Charge (counter-clockwise)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <h3>Chamber Controls</h3>
+                
+                <div class="control-group">
+                    <label for="magneticField">Magnetic Field Strength (T):</label>
+                    <input type="range" id="magneticField" min="0.01" max="2" step="0.01" value="0.5">
+                    <div class="value" id="magneticFieldValue">0.50 T</div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="particleVelocity">Particle Velocity (×10⁶ m/s):</label>
+                    <input type="range" id="particleVelocity" min="0.5" max="20" step="0.5" value="5">
+                    <div class="value" id="particleVelocityValue">5.0 ×10⁶ m/s</div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="entryAngle">Entry Angle (degrees):</label>
+                    <input type="range" id="entryAngle" min="0" max="90" step="5" value="90">
+                    <div class="value" id="entryAngleValue">90°</div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="trailLength">Trail Length:</label>
+                    <input type="range" id="trailLength" min="10" max="200" step="10" value="50">
+                    <div class="value" id="trailLengthValue">50</div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="emissionRate">Particle Emission Rate:</label>
+                    <input type="range" id="emissionRate" min="1" max="10" step="1" value="3">
+                    <div class="value" id="emissionRateValue">3 particles/s</div>
+                </div>
+                
+                <div class="control-group">
+                    <button id="emitParticle">Emit Particle</button>
+                    <button id="clearTrails">Clear Trails</button>
+                    <button id="pauseSimulation">Pause</button>
+                </div>
+                
+                <div class="status-display">
+                    <h4>Selected Particle Analysis</h4>
+                    <div class="status-item">
+                        <span>Particle Type:</span>
+                        <span id="selectedParticle">Electron</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Charge-to-Mass Ratio:</span>
+                        <span id="chargeMassRatio">-1.76×10¹¹ C/kg</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Radius of Curvature:</span>
+                        <span id="radiusValue">0.00 mm</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Cyclotron Frequency:</span>
+                        <span id="frequencyValue">0.00 GHz</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Period:</span>
+                        <span id="periodValue">0.00 ns</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Momentum:</span>
+                        <span id="momentumValue">0.00 ×10⁻²¹ kg·m/s</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Kinetic Energy:</span>
+                        <span id="energyValue">0.00 keV</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="graphs-container">
+            <div class="graph-box">
+                <h3>Radius vs Velocity</h3>
+                <canvas id="radiusVelocityGraph"></canvas>
+            </div>
+            <div class="graph-box">
+                <h3>Cyclotron Frequency vs Field Strength</h3>
+                <canvas id="frequencyFieldGraph"></canvas>
+            </div>
+            <div class="graph-box">
+                <h3>Particle Comparison</h3>
+                <canvas id="comparisonGraph"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('chamberCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Particle types with real physics data
+        const particleTypes = {
+            electron: {
+                name: 'Electron',
+                charge: -1.6e-19,
+                mass: 9.1e-31,
+                color: '#2ecc71',
+                chargeMassRatio: -1.76e11
+            },
+            proton: {
+                name: 'Proton',
+                charge: 1.6e-19,
+                mass: 1.67e-27,
+                color: '#e74c3c',
+                chargeMassRatio: 9.58e7
+            },
+            alpha: {
+                name: 'Alpha Particle',
+                charge: 3.2e-19,
+                mass: 6.64e-27,
+                color: '#f39c12',
+                chargeMassRatio: 4.82e7
+            }
+        };
+        
+        // Simulation variables
+        let selectedParticleType = 'electron';
+        let magneticField = 0.5;
+        let particleVelocity = 5e6;
+        let entryAngle = 90;
+        let trailLength = 50;
+        let emissionRate = 3;
+        let isPaused = false;
+        let particles = [];
+        let lastEmissionTime = 0;
+        
+        // Graph setup
+        const radiusVelocityGraph = new Chart(document.getElementById('radiusVelocityGraph'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: []
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Velocity (×10⁶ m/s)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Radius (mm)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#2c3e50' }
+                    }
+                }
+            }
+        });
+        
+        const frequencyFieldGraph = new Chart(document.getElementById('frequencyFieldGraph'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: []
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Magnetic Field (T)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Cyclotron Frequency (GHz)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#2c3e50' }
+                    }
+                }
+            }
+        });
+        
+        const comparisonGraph = new Chart(document.getElementById('comparisonGraph'), {
+            type: 'bar',
+            data: {
+                labels: ['Electron', 'Proton', 'Alpha'],
+                datasets: [
+                    {
+                        label: 'Radius (mm)',
+                        data: [],
+                        backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                        borderColor: '#3498db',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Frequency (GHz)',
+                        data: [],
+                        backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                        borderColor: '#e74c3c',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    },
+                    y: {
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#2c3e50' }
+                    }
+                }
+            }
+        });
+        
+        // Particle class
+        class Particle {
+            constructor(type, x, y, vx, vy) {
+                this.type = type;
+                this.particle = particleTypes[type];
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.trail = [{x, y}];
+                this.active = true;
+                this.age = 0;
+            }
+            
+            update(dt) {
+                if (!this.active) return;
+                
+                // Lorentz force: F = Q(v × B)
+                const fx = this.particle.charge * this.vy * magneticField;
+                const fy = -this.particle.charge * this.vx * magneticField;
+                
+                // Update velocity (F = ma, a = F/m)
+                const ax = fx / this.particle.mass;
+                const ay = fy / this.particle.mass;
+                
+                this.vx += ax * dt;
+                this.vy += ay * dt;
+                
+                // Update position
+                const scale = 1e-6; // Convert to display coordinates
+                this.x += this.vx * dt / scale;
+                this.y += this.vy * dt / scale;
+                
+                // Update trail
+                this.trail.push({x: this.x, y: this.y});
+                if (this.trail.length > trailLength) {
+                    this.trail.shift();
+                }
+                
+                // Deactivate if out of bounds
+                if (this.x < -50 || this.x > canvas.width + 50 || 
+                    this.y < -50 || this.y > canvas.height + 50) {
+                    this.active = false;
+                }
+                
+                this.age += dt;
+            }
+            
+            draw(ctx) {
+                if (!this.active) return;
+                
+                // Draw trail with fading effect
+                if (this.trail.length > 1) {
+                    ctx.strokeStyle = this.particle.color;
+                    ctx.lineWidth = 2;
+                    
+                    for (let i = 1; i < this.trail.length; i++) {
+                        const alpha = i / this.trail.length;
+                        ctx.globalAlpha = alpha * 0.7;
+                        ctx.beginPath();
+                        ctx.moveTo(this.trail[i-1].x, this.trail[i-1].y);
+                        ctx.lineTo(this.trail[i].x, this.trail[i].y);
+                        ctx.stroke();
+                    }
+                    ctx.globalAlpha = 1;
+                }
+                
+                // Draw particle
+                ctx.fillStyle = this.particle.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 4, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Draw charge symbol
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 8px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.particle.charge > 0 ? '+' : '-', this.x, this.y);
+            }
+        }
+        
+        // Control event listeners
+        document.querySelectorAll('.particle-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.particle-option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                selectedParticleType = option.dataset.particle;
+                updateAnalysis();
+                updateGraphs();
+            });
+        });
+        
+        document.getElementById('magneticField').addEventListener('input', (e) => {
+            magneticField = parseFloat(e.target.value);
+            document.getElementById('magneticFieldValue').textContent = magneticField.toFixed(2) + ' T';
+            updateAnalysis();
+            updateGraphs();
+        });
+        
+        document.getElementById('particleVelocity').addEventListener('input', (e) => {
+            particleVelocity = parseFloat(e.target.value) * 1e6;
+            document.getElementById('particleVelocityValue').textContent = e.target.value + '.0 ×10⁶ m/s';
+            updateAnalysis();
+            updateGraphs();
+        });
+        
+        document.getElementById('entryAngle').addEventListener('input', (e) => {
+            entryAngle = parseFloat(e.target.value);
+            document.getElementById('entryAngleValue').textContent = entryAngle + '°';
+        });
+        
+        document.getElementById('trailLength').addEventListener('input', (e) => {
+            trailLength = parseInt(e.target.value);
+            document.getElementById('trailLengthValue').textContent = trailLength;
+        });
+        
+        document.getElementById('emissionRate').addEventListener('input', (e) => {
+            emissionRate = parseInt(e.target.value);
+            document.getElementById('emissionRateValue').textContent = emissionRate + ' particles/s';
+        });
+        
+        document.getElementById('emitParticle').addEventListener('click', () => {
+            emitParticle();
+        });
+        
+        document.getElementById('clearTrails').addEventListener('click', () => {
+            particles = [];
+        });
+        
+        document.getElementById('pauseSimulation').addEventListener('click', () => {
+            isPaused = !isPaused;
+            document.getElementById('pauseSimulation').textContent = isPaused ? 'Resume' : 'Pause';
+            document.getElementById('pauseSimulation').classList.toggle('active', isPaused);
+        });
+        
+        function emitParticle() {
+            const angleRad = entryAngle * Math.PI / 180;
+            const vx = particleVelocity * Math.cos(angleRad);
+            const vy = particleVelocity * Math.sin(angleRad);
+            
+            const particle = new Particle(
+                selectedParticleType,
+                50,
+                canvas.height / 2,
+                vx,
+                vy
+            );
+            
+            particles.push(particle);
+        }
+        
+        function updateAnalysis() {
+            const particle = particleTypes[selectedParticleType];
+            
+            // Calculate physics values
+            const momentum = particle.mass * particleVelocity;
+            const radius = (momentum) / (Math.abs(particle.charge) * magneticField);
+            const frequency = (Math.abs(particle.charge) * magneticField) / (2 * Math.PI * particle.mass);
+            const period = 1 / frequency;
+            const kineticEnergy = 0.5 * particle.mass * particleVelocity * particleVelocity;
+            
+            // Update display
+            document.getElementById('selectedParticle').textContent = particle.name;
+            document.getElementById('chargeMassRatio').textContent = 
+                (particle.chargeMassRatio > 0 ? '+' : '') + particle.chargeMassRatio.toExponential(2) + ' C/kg';
+            document.getElementById('radiusValue').textContent = (radius * 1000).toFixed(2) + ' mm';
+            document.getElementById('frequencyValue').textContent = (frequency / 1e9).toFixed(2) + ' GHz';
+            document.getElementById('periodValue').textContent = (period * 1e9).toFixed(2) + ' ns';
+            document.getElementById('momentumValue').textContent = (momentum * 1e21).toFixed(2) + ' ×10⁻²¹ kg·m/s';
+            document.getElementById('energyValue').textContent = (kineticEnergy / 1.6e-16).toFixed(2) + ' keV';
+        }
+        
+        function updateGraphs() {
+            // Update radius vs velocity graph
+            const velocities = [];
+            for (let v = 1; v <= 20; v++) {
+                velocities.push(v);
+            }
+            
+            const datasets = [];
+            Object.keys(particleTypes).forEach(type => {
+                const particle = particleTypes[type];
+                const radii = velocities.map(v => {
+                    const vel = v * 1e6;
+                    const momentum = particle.mass * vel;
+                    return (momentum / (Math.abs(particle.charge) * magneticField)) * 1000; // Convert to mm
+                });
+                
+                datasets.push({
+                    label: particle.name,
+                    data: radii,
+                    borderColor: particle.color,
+                    backgroundColor: particle.color + '33',
+                    tension: 0.4
+                });
+            });
+            
+            radiusVelocityGraph.data.labels = velocities;
+            radiusVelocityGraph.data.datasets = datasets;
+            radiusVelocityGraph.update();
+            
+            // Update frequency vs field graph
+            const fields = [];
+            for (let b = 0.1; b <= 2; b += 0.1) {
+                fields.push(b.toFixed(1));
+            }
+            
+            const freqDatasets = [];
+            Object.keys(particleTypes).forEach(type => {
+                const particle = particleTypes[type];
+                const frequencies = fields.map(b => {
+                    const B = parseFloat(b);
+                    return (Math.abs(particle.charge) * B) / (2 * Math.PI * particle.mass) / 1e9; // Convert to GHz
+                });
+                
+                freqDatasets.push({
+                    label: particle.name,
+                    data: frequencies,
+                    borderColor: particle.color,
+                    backgroundColor: particle.color + '33',
+                    tension: 0.4
+                });
+            });
+            
+            frequencyFieldGraph.data.labels = fields;
+            frequencyFieldGraph.data.datasets = freqDatasets;
+            frequencyFieldGraph.update();
+            
+            // Update comparison graph
+            const radii = Object.keys(particleTypes).map(type => {
+                const particle = particleTypes[type];
+                const momentum = particle.mass * particleVelocity;
+                return (momentum / (Math.abs(particle.charge) * magneticField)) * 1000; // Convert to mm
+            });
+            
+            const frequencies = Object.keys(particleTypes).map(type => {
+                const particle = particleTypes[type];
+                return (Math.abs(particle.charge) * magneticField) / (2 * Math.PI * particle.mass) / 1e9; // Convert to GHz
+            });
+            
+            comparisonGraph.data.datasets[0].data = radii;
+            comparisonGraph.data.datasets[1].data = frequencies;
+            comparisonGraph.update();
+        }
+        
+        function drawMagneticField() {
+            const spacing = 25;
+            ctx.strokeStyle = 'rgba(52, 152, 219, 0.2)';
+            ctx.lineWidth = 1;
+            
+            for (let i = spacing; i < canvas.width; i += spacing) {
+                for (let j = spacing; j < canvas.height; j += spacing) {
+                    // Draw × symbols to indicate field into page
+                    ctx.beginPath();
+                    ctx.moveTo(i - 4, j - 4);
+                    ctx.lineTo(i + 4, j + 4);
+                    ctx.moveTo(i + 4, j - 4);
+                    ctx.lineTo(i - 4, j + 4);
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw magnetic field indicators
+            drawMagneticField();
+            
+            // Auto-emit particles
+            if (!isPaused) {
+                const currentTime = Date.now();
+                if (currentTime - lastEmissionTime > 5000 / emissionRate) { // Much slower emission (5 seconds)
+                    emitParticle();
+                    lastEmissionTime = currentTime;
+                }
+            }
+            
+            // Update and draw particles
+            const dt = 1e-12; // Much slower time step (0.001 ns)
+            particles = particles.filter(particle => {
+                if (!isPaused) {
+                    particle.update(dt);
+                }
+                particle.draw(ctx);
+                return particle.active;
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Initialize
+        document.querySelector('.particle-option[data-particle="electron"]').classList.add('selected');
+        updateAnalysis();
+        updateGraphs();
+        animate();
+    </script>
+</body>
+</html>

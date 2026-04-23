@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circular Motion Simulator</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js"></script>
+    </head>
+<body>
+    <div class="container">
+        <h1>Circular Motion Simulator</h1>
+        
+        <div class="theory-section">
+            <h2>Circular Motion Theory</h2>
+            <p>Circular motion occurs when an object moves in a circular path at constant speed. Despite the constant speed, the object is accelerating because its direction is continuously changing.</p>
+            
+            <div class="equation">F = mv²/r</div>
+            <p>Where F is the centripetal force, m is mass, v is velocity, and r is radius.</p>
+            
+            <div class="equation">a = v²/r = ω²r</div>
+            <p>Where a is centripetal acceleration, ω is angular velocity (ω = v/r).</p>
+            
+            <div class="equation">T = 2π/ω = 2πr/v</div>
+            <p>Where T is the period of one complete revolution.</p>
+        </div>
+        
+        <div class="simulation-container">
+            <div class="canvas-container">
+                <h3>Circular Motion Visualization</h3>
+                <canvas id="motionCanvas"></canvas>
+                <div class="vector-legend">
+                    <div class="vector-item">
+                        <div class="vector-color" style="background: #3498db;"></div>
+                        <span>Velocity</span>
+                    </div>
+                    <div class="vector-item">
+                        <div class="vector-color" style="background: #e74c3c;"></div>
+                        <span>Centripetal Force</span>
+                    </div>
+                    <div class="vector-item">
+                        <div class="vector-color" style="background: #2ecc71;"></div>
+                        <span>Centripetal Acceleration</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <h3>Controls</h3>
+                
+                <div class="control-group">
+                    <label for="radius">Radius (m):</label>
+                    <input type="range" id="radius" min="0.5" max="3" step="0.1" value="1.5">
+                    <div class="value" id="radiusValue">1.5 m</div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="speed">Speed (m/s):</label>
+                    <input type="range" id="speed" min="1" max="10" step="0.1" value="5">
+                    <div class="value" id="speedValue">5.0 m/s</div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="mass">Mass (kg):</label>
+                    <input type="range" id="mass" min="0.1" max="5" step="0.1" value="1">
+                    <div class="value" id="massValue">1.0 kg</div>
+                </div>
+                
+                <div class="control-group">
+                    <button id="playPause">Pause</button>
+                    <button id="reset">Reset</button>
+                    <button id="toggleVectors">Toggle Vectors</button>
+                </div>
+                
+                <div class="status-display">
+                    <h4>Current Values:</h4>
+                    <div class="status-item">
+                        <span>Angular Velocity:</span>
+                        <span id="omegaValue">0.00 rad/s</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Period:</span>
+                        <span id="periodValue">0.00 s</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Frequency:</span>
+                        <span id="frequencyValue">0.00 Hz</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Centripetal Force:</span>
+                        <span id="forceValue">0.00 N</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Centripetal Acceleration:</span>
+                        <span id="accelerationValue">0.00 m/s²</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="graphs-container">
+            <div class="graph-box">
+                <h3>Position vs Time</h3>
+                <canvas id="positionGraph"></canvas>
+            </div>
+            <div class="graph-box">
+                <h3>Velocity vs Time</h3>
+                <canvas id="velocityGraph"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('motionCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Simulation variables
+        let radius = 1.5;
+        let speed = 5;
+        let mass = 1;
+        let angle = 0;
+        let isPlaying = true;
+        let showVectors = true;
+        let time = 0;
+        let animationId;
+        
+        // Graph data
+        let positionData = [];
+        let velocityData = [];
+        let maxDataPoints = 100;
+        
+        // Graph setup
+        const positionGraph = new Chart(document.getElementById('positionGraph'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'X Position',
+                    data: [],
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Y Position',
+                    data: [],
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time (s)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Position (m)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#2c3e50' }
+                    }
+                }
+            }
+        });
+        
+        const velocityGraph = new Chart(document.getElementById('velocityGraph'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'X Velocity',
+                    data: [],
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Y Velocity',
+                    data: [],
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time (s)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Velocity (m/s)',
+                            color: '#2c3e50'
+                        },
+                        ticks: { color: '#2c3e50' },
+                        grid: { color: 'rgba(44, 62, 80, 0.1)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#2c3e50' }
+                    }
+                }
+            }
+        });
+        
+        // Control event listeners
+        document.getElementById('radius').addEventListener('input', (e) => {
+            radius = parseFloat(e.target.value);
+            document.getElementById('radiusValue').textContent = radius.toFixed(1) + ' m';
+            updateCalculations();
+        });
+        
+        document.getElementById('speed').addEventListener('input', (e) => {
+            speed = parseFloat(e.target.value);
+            document.getElementById('speedValue').textContent = speed.toFixed(1) + ' m/s';
+            updateCalculations();
+        });
+        
+        document.getElementById('mass').addEventListener('input', (e) => {
+            mass = parseFloat(e.target.value);
+            document.getElementById('massValue').textContent = mass.toFixed(1) + ' kg';
+            updateCalculations();
+        });
+        
+        document.getElementById('playPause').addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            document.getElementById('playPause').textContent = isPlaying ? 'Pause' : 'Play';
+            document.getElementById('playPause').classList.toggle('active', !isPlaying);
+        });
+        
+        document.getElementById('reset').addEventListener('click', () => {
+            angle = 0;
+            time = 0;
+            positionData = [];
+            velocityData = [];
+            updateGraphs();
+        });
+        
+        document.getElementById('toggleVectors').addEventListener('click', () => {
+            showVectors = !showVectors;
+            document.getElementById('toggleVectors').classList.toggle('active', !showVectors);
+        });
+        
+        function updateCalculations() {
+            const omega = speed / radius;
+            const period = 2 * Math.PI / omega;
+            const frequency = 1 / period;
+            const force = mass * speed * speed / radius;
+            const acceleration = speed * speed / radius;
+            
+            document.getElementById('omegaValue').textContent = omega.toFixed(2);
+            document.getElementById('periodValue').textContent = period.toFixed(2);
+            document.getElementById('frequencyValue').textContent = frequency.toFixed(2);
+            document.getElementById('forceValue').textContent = force.toFixed(2);
+            document.getElementById('accelerationValue').textContent = acceleration.toFixed(2);
+        }
+        
+        function updateGraphs() {
+            positionGraph.data.labels = positionData.map((_, i) => (i * 0.05).toFixed(2));
+            positionGraph.data.datasets[0].data = positionData.map(p => p.x);
+            positionGraph.data.datasets[1].data = positionData.map(p => p.y);
+            positionGraph.update('none');
+            
+            velocityGraph.data.labels = velocityData.map((_, i) => (i * 0.05).toFixed(2));
+            velocityGraph.data.datasets[0].data = velocityData.map(v => v.x);
+            velocityGraph.data.datasets[1].data = velocityData.map(v => v.y);
+            velocityGraph.update('none');
+        }
+        
+        function drawVector(x, y, vx, vy, color, scale = 1) {
+            const endX = x + vx * scale;
+            const endY = y + vy * scale;
+            
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+            
+            // Arrowhead
+            const angle = Math.atan2(vy, vx);
+            ctx.save();
+            ctx.translate(endX, endY);
+            ctx.rotate(angle);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-10, -5);
+            ctx.lineTo(-10, 5);
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.restore();
+        }
+        
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const scale = Math.min(canvas.width, canvas.height) / 6;
+            
+            // Draw circular path
+            ctx.strokeStyle = 'rgba(52, 152, 219, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius * scale, 0, 2 * Math.PI);
+            ctx.stroke();
+            
+            // Draw center point
+            ctx.fillStyle = '#2c3e50';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Calculate particle position
+            const x = centerX + radius * scale * Math.cos(angle);
+            const y = centerY + radius * scale * Math.sin(angle);
+            
+            // Draw particle
+            ctx.fillStyle = '#3498db';
+            ctx.beginPath();
+            ctx.arc(x, y, 8, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            if (showVectors) {
+                // Velocity vector (tangent to circle)
+                const vx = -speed * Math.sin(angle);
+                const vy = speed * Math.cos(angle);
+                drawVector(x, y, vx, vy, '#3498db', 15);
+                
+                // Centripetal force vector (toward center)
+                const fx = -(x - centerX) / scale;
+                const fy = -(y - centerY) / scale;
+                const forceMagnitude = speed * speed / radius;
+                drawVector(x, y, fx * forceMagnitude, fy * forceMagnitude, '#e74c3c', 10);
+                
+                // Centripetal acceleration vector (toward center)
+                drawVector(x, y, fx * forceMagnitude / mass, fy * forceMagnitude / mass, '#2ecc71', 10);
+            }
+            
+            // Update angle
+            if (isPlaying) {
+                const omega = speed / radius;
+                angle += omega * 0.05;
+                time += 0.05;
+                
+                // Update data for graphs
+                const posX = radius * Math.cos(angle);
+                const posY = radius * Math.sin(angle);
+                const velX = -speed * Math.sin(angle);
+                const velY = speed * Math.cos(angle);
+                
+                positionData.push({ x: posX, y: posY });
+                velocityData.push({ x: velX, y: velY });
+                
+                if (positionData.length > maxDataPoints) {
+                    positionData.shift();
+                    velocityData.shift();
+                }
+                
+                if (Math.floor(time * 20) % 5 === 0) {
+                    updateGraphs();
+                }
+            }
+            
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // Initialize
+        updateCalculations();
+        animate();
+    </script>
+</body>
+</html>
