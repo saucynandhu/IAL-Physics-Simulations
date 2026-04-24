@@ -64,81 +64,76 @@ const velocityDisplay = document.getElementById('velocity');
 const accelerationDisplay = document.getElementById('acceleration');
 const timeDisplay = document.getElementById('time');
 
-// Initialize graphs
-const forceExtensionChart = new Chart(
-    document.getElementById('force-extension-graph'),
-    {
-        type: 'scatter',
-        data: {
-            datasets: [{
-                label: 'Force vs Extension',
-                data: [],
-                borderColor: '#3498db',
-                backgroundColor: '#3498db',
-                pointRadius: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Extension (m)'
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Force (N)'
-                    }
-                }
-            }
-        }
-    }
-);
-
-const energyChart = new Chart(
-    document.getElementById('energy-graph'),
+// Initialize elastic limit graph
+const elasticLimitChart = new Chart(
+    document.getElementById('elastic-limit-graph'),
     {
         type: 'line',
         data: {
-            labels: [],
             datasets: [
                 {
-                    label: 'Kinetic Energy',
-                    data: [],
-                    borderColor: '#e74c3c',
-                    fill: false
-                },
-                {
-                    label: 'Potential Energy',
-                    data: [],
-                    borderColor: '#2ecc71',
-                    fill: false
-                },
-                {
-                    label: 'Total Energy',
-                    data: [],
+                    label: 'Hooke\'s Law Region',
+                    data: [
+                        {x: 0, y: 0},
+                        {x: 0.02, y: 4},
+                        {x: 0.04, y: 8},
+                        {x: 0.06, y: 12}
+                    ],
                     borderColor: '#3498db',
-                    fill: false
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    borderWidth: 3
+                },
+                {
+                    label: 'Elastic Limit',
+                    data: [
+                        {x: 0.06, y: 12},
+                        {x: 0.08, y: 14},
+                        {x: 0.10, y: 15}
+                    ],
+                    borderColor: '#f39c12',
+                    backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                    borderWidth: 3
+                },
+                {
+                    label: 'Plastic Deformation',
+                    data: [
+                        {x: 0.10, y: 15},
+                        {x: 0.12, y: 15.5},
+                        {x: 0.14, y: 15.8}
+                    ],
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    borderWidth: 3
                 }
             ]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 x: {
+                    type: 'linear',
+                    position: 'bottom',
                     title: {
                         display: true,
-                        text: 'Time (s)'
-                    }
+                        text: 'Extension (m)'
+                    },
+                    min: 0,
+                    max: 0.15
                 },
                 y: {
                     title: {
                         display: true,
-                        text: 'Energy (J)'
-                    }
+                        text: 'Force (N)'
+                    },
+                    min: 0,
+                    max: 20
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom'
                 }
             }
         }
@@ -262,42 +257,7 @@ function update(deltaTime) {
     accelerationDisplay.textContent = system.acceleration.toFixed(3);
     timeDisplay.textContent = time.toFixed(2);
     
-    // Update force-extension graph with all history points
-    forceExtensionChart.data.datasets = [{
-        label: 'Force vs Extension',
-        data: system.history.map(point => ({
-            x: point.extension,
-            y: point.force
-        })),
-        borderColor: '#3498db',
-        backgroundColor: '#3498db',
-        pointRadius: 2
-    }];
-    forceExtensionChart.update();
-    
-    // Update energy graph with all history points
-    energyChart.data.labels = system.energyHistory.map(point => point.time.toFixed(1));
-    energyChart.data.datasets = [
-        {
-            label: 'Kinetic Energy',
-            data: system.energyHistory.map(point => point.kinetic),
-            borderColor: '#e74c3c',
-            fill: false
-        },
-        {
-            label: 'Potential Energy',
-            data: system.energyHistory.map(point => point.potential),
-            borderColor: '#2ecc71',
-            fill: false
-        },
-        {
-            label: 'Total Energy',
-            data: system.energyHistory.map(point => point.total),
-            borderColor: '#3498db',
-            fill: false
-        }
-    ];
-    energyChart.update();
+    // No dynamic graph updates - using static educational graph
     
     // Only increment time if the spring is still moving
     if (system.isMoving) {
@@ -381,12 +341,7 @@ function reset() {
     system.energyHistory = []; // Clear energy history
     system.isMoving = true; // Reset movement state
     
-    // Reset graphs
-    forceExtensionChart.data.datasets[0].data = [];
-    energyChart.data.labels = [];
-    energyChart.data.datasets.forEach(dataset => dataset.data = []);
-    forceExtensionChart.update();
-    energyChart.update();
+    // No graph reset needed - using static educational graph
     
     // Reset displays
     extensionDisplay.textContent = "0.00";

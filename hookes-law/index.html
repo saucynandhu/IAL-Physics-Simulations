@@ -10,9 +10,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js"></script>
 </head>
 <body>
+    <nav class="navigation">
+        <div class="nav-container">
+            <a href="../index.html" class="nav-button home-button">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-text">Home</span>
+            </a>
+            <div class="nav-title">
+                <h1>Hooke's Law Simulator</h1>
+            </div>
+        </div>
+    </nav>
+    
     <div class="container">
-        <h1>Hooke's Law Simulator</h1>
-        
         <div class="theory-section">
             <h2>Hooke's Law Theory</h2>
             
@@ -128,17 +138,6 @@
             </div>
         </div>
         
-        <div class="graphs-container">
-            <div class="graph">
-                <h3>Force vs Extension</h3>
-                <canvas id="force-extension-graph"></canvas>
-            </div>
-            <div class="graph">
-                <h3>Energy vs Time</h3>
-                <canvas id="energy-graph"></canvas>
-            </div>
-        </div>
-        
         <div class="data-display">
             <div class="data-group">
                 <h3>Spring Properties</h3>
@@ -159,6 +158,53 @@
                 <p>Velocity: <span id="velocity">0.00</span> m/s</p>
                 <p>Acceleration: <span id="acceleration">0.00</span> m/s²</p>
                 <p>Time: <span id="time">0.00</span> s</p>
+            </div>
+        </div>
+        
+        <div class="graph-container">
+            <div class="graph">
+                <h3>Elastic Limit and Limit of Proportionality</h3>
+                <canvas id="elastic-limit-graph"></canvas>
+                <div class="graph-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #3498db;"></div>
+                        <span>Hooke's Law Region (F ∝ x)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #f39c12;"></div>
+                        <span>Elastic Limit Region</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #e74c3c;"></div>
+                        <span>Plastic Deformation (Permanent)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="suggested-section">
+            <h2>Other Simulations You Might Like</h2>
+            <div class="simulation-grid">
+                <a href="../simple-harmonic-motion/index.html" class="simulation-card">
+                    <div class="card-icon">🔄</div>
+                    <h3>Simple Harmonic Motion</h3>
+                    <p>Explore oscillatory motion with mass-spring systems and pendulums</p>
+                </a>
+                <a href="../circular-motion/index.html" class="simulation-card">
+                    <div class="card-icon">⭕</div>
+                    <h3>Circular Motion</h3>
+                    <p>Understand centripetal force and circular velocity concepts</p>
+                </a>
+                <a href="../capacitor-rc/index.html" class="simulation-card">
+                    <div class="card-icon">⚡</div>
+                    <h3>RC Circuits</h3>
+                    <p>Learn about capacitor charging and discharging behavior</p>
+                </a>
+                <a href="../magnetic-field-particle/index.html" class="simulation-card">
+                    <div class="card-icon">🧲</div>
+                    <h3>Magnetic Fields</h3>
+                    <p>Visualize charged particle motion in magnetic fields</p>
+                </a>
             </div>
         </div>
     </div>

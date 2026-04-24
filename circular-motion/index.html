@@ -10,9 +10,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js"></script>
     </head>
 <body>
+    <nav class="navigation">
+        <div class="nav-container">
+            <a href="../index.html" class="nav-button home-button">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-text">Home</span>
+            </a>
+            <div class="nav-title">
+                <h1>Circular Motion Simulator</h1>
+            </div>
+        </div>
+    </nav>
+    
     <div class="container">
-        <h1>Circular Motion Simulator</h1>
-        
         <div class="theory-section">
             <h2>Circular Motion Theory</h2>
             <p>Circular motion occurs when an object moves in a circular path at constant speed. Despite the constant speed, the object is accelerating because its direction is continuously changing.</p>
@@ -407,5 +417,32 @@
         updateCalculations();
         animate();
     </script>
+        
+        <div class="suggested-section">
+            <h2>Other Simulations You Might Like</h2>
+            <div class="simulation-grid">
+                <a href="../simple-harmonic-motion/index.html" class="simulation-card">
+                    <div class="card-icon">🔄</div>
+                    <h3>Simple Harmonic Motion</h3>
+                    <p>Explore oscillatory motion with mass-spring systems and pendulums</p>
+                </a>
+                <a href="../hookes-law/index.html" class="simulation-card">
+                    <div class="card-icon">🌀</div>
+                    <h3>Hooke's Law</h3>
+                    <p>Explore spring mechanics and elastic limits with force-extension relationships</p>
+                </a>
+                <a href="../projectile-motion/index.html" class="simulation-card">
+                    <div class="card-icon">🚀</div>
+                    <h3>Projectile Motion</h3>
+                    <p>Understand trajectory and motion under gravity</p>
+                </a>
+                <a href="../3d-pendulum/index.html" class="simulation-card">
+                    <div class="card-icon">🎯</div>
+                    <h3>3D Pendulum</h3>
+                    <p>Explore pendulum motion in three dimensions with complex dynamics</p>
+                </a>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

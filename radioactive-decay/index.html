@@ -10,9 +10,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js"></script>
 </head>
 <body>
+    <nav class="navigation">
+        <div class="nav-container">
+            <a href="../index.html" class="nav-button home-button">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-text">Home</span>
+            </a>
+            <div class="nav-title">
+                <h1>Radioactive Decay Simulator</h1>
+            </div>
+        </div>
+    </nav>
+    
     <div class="container">
-        <h1>Radioactive Decay Simulator</h1>
-        
         <div class="theory-section">
             <h2>Radioactive Decay Theory</h2>
             <p>Radioactive decay is a random process at the level of single atoms, but predictable statistically for large samples. The probability of decay per unit time is constant for a given isotope.</p>
@@ -580,5 +590,32 @@
         resetSimulation();
         animate();
     </script>
+        
+        <div class="suggested-section">
+            <h2>Other Simulations You Might Like</h2>
+            <div class="simulation-grid">
+                <a href="../capacitor-rc/index.html" class="simulation-card">
+                    <div class="card-icon">⚡</div>
+                    <h3>RC Circuits</h3>
+                    <p>Learn about capacitor charging and discharging behavior</p>
+                </a>
+                <a href="../magnetic-field-particle/index.html" class="simulation-card">
+                    <div class="card-icon">🧲</div>
+                    <h3>Magnetic Fields</h3>
+                    <p>Visualize charged particle motion in magnetic fields</p>
+                </a>
+                <a href="../hr-diagram/index.html" class="simulation-card">
+                    <div class="card-icon">⭐</div>
+                    <h3>HR Diagram</h3>
+                    <p>Explore stellar evolution and star classification</p>
+                </a>
+                <a href="../diffraction-patterns/index.html" class="simulation-card">
+                    <div class="card-icon">🌊</div>
+                    <h3>Diffraction Patterns</h3>
+                    <p>Understand wave behavior and interference patterns</p>
+                </a>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
