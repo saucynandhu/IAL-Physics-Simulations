@@ -75,6 +75,66 @@ body {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+/* Suggested Simulations Section */
+.suggested-section {
+    background: white;
+    padding: clamp(20px, 4vw, 40px);
+    border-radius: 15px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    margin-top: 40px;
+}
+
+.suggested-section h2 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 30px;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+}
+
+.simulation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: clamp(15px, 3vw, 25px);
+}
+
+.simulation-card {
+    display: block;
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #2c3e50;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    text-align: center;
+}
+
+.simulation-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+    border-color: #3498db;
+    background: white;
+}
+
+.card-icon {
+    font-size: 2.5em;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.simulation-card h3 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: clamp(1rem, 2.5vw, 1.3rem);
+}
+
+.simulation-card p {
+    color: #666;
+    font-size: clamp(0.85rem, 2vw, 0.95rem);
+    line-height: 1.5;
+    margin: 0;
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
